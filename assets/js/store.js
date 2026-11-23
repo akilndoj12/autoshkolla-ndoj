@@ -93,6 +93,7 @@
           if (db.site.email === 'info@autoshkollandoj.com') db.site.email = '';
           db.schools.forEach((x) => { if (x.email === 'info@autoshkollandoj.com') x.email = ''; });
         }
+        if ((db.version || 1) < 5 && db.site.heroText) db.site.heroText = db.site.heroText.replace('teste për çdo kapitull', 'teste për çdo temë');
         db.version = s.version;
         save();
       } else if (Manual.ready && db.chapters.length < Manual.topics().length) {

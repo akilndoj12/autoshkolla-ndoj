@@ -6,13 +6,13 @@
    Administratori mund t'i ndryshojë të gjitha nga Paneli Admin.
    ========================================================== */
 window.SEED = {
-  version: 4,
+  version: 5,
 
   site: {
     name: 'Autoshkolla Ndoj',
     slogan: 'Rrëshen, Mirditë',
     heroTitle: 'Mëso teorinë, ushtrohu dhe përgatitu për provimin',
-    heroText: 'Platforma online e Autoshkolla Ndoj: leksione të qarta me figura, teste për çdo kapitull dhe simulim i provimit teorik të patentës – nga kompjuteri, tableti ose telefoni.',
+    heroText: 'Platforma online e Autoshkolla Ndoj: leksione të qarta me figura, teste për çdo temë dhe simulim i provimit teorik të patentës – nga kompjuteri, tableti ose telefoni.',
     about: 'Kjo platformë është krijuar nga Autoshkolla Ndoj për të ndihmuar nxënësit të mësojnë rregullat e qarkullimit rrugor dhe të përgatiten me siguri për provimin teorik.',
     phone: '068 20 81 109',
     email: '',

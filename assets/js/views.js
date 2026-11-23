@@ -60,7 +60,7 @@
             <a class="btn btn-red btn-lg" href="#/provimi">🏆 Bëj provim</a>
           </div>
         </div>
-        <img class="hero-logo" src="assets/img/logo.png" alt="Logo e ${esc(s.name)}" width="360" height="360" />
+        <img class="hero-logo" src="assets/img/logo.png?v=2" alt="Logo e ${esc(s.name)}" width="360" height="360" />
       </div>
     </section>
 
