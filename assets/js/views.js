@@ -191,11 +191,11 @@
     const t = window.Manual && Manual.topic(topicId);
     if (!t) return '';
     return `<div class="manual-list" id="manual-list">
-      ${t.blocks.map((b) => `
+      ${t.blocks.map((b) => ({ b, ok: b.items.filter(([, ans]) => ans) })).filter((x) => x.ok.length).map(({ b, ok }) => `
         <div class="mblock">
           ${b.fig ? `<div class="mblock-fig">${figHtml({ fig: b.id, figLabel: b.label })}<span class="small muted">${esc(b.label)}<br>Nr. ${esc(b.id)}</span></div>` : `<div class="small muted mblock-id">Nr. ${esc(b.id)}</div>`}
           <ol class="mstatements">
-            ${b.items.map(([text, ans]) => `<li data-reveal><span class="mtext">${esc(text)}</span><span class="ans-badge ${ans ? 'ok' : 'no'}">${ans ? 'Saktë' : 'Gabim'}</span></li>`).join('')}
+            ${ok.map(([text]) => `<li><span class="mtext">${esc(text)}</span></li>`).join('')}
           </ol>
         </div>`).join('')}
     </div>`;
@@ -214,6 +214,7 @@
     const pct = Math.round(((idx + (done ? 1 : 0)) / chs.length) * 100);
     const lastTest = Store.myProgress() ? [...Store.myProgress().tests].reverse().find((t) => t.chapterId === id) : null;
     const total = Store.questionsFor(id).length;
+    const correctCount = Store.questionsFor(id).filter((q) => q.source === 'manual' && q.answer === true).length;
     const objectives = c.objectives && c.objectives.length ? c.objectives
       : [`Të njohësh rregullat e temës “${c.title}” sipas manualit zyrtar të DPSHTRR.`, 'Të dallosh fjalitë e sakta nga ato të gabuara për çdo figurë.', 'Të përgatitesh për pyetjet e kësaj teme në provimin teorik.'];
     const hasTheory = (c.theory && c.theory.length) || (c.signs || []).length;
@@ -242,9 +243,8 @@
           </section>` : ''}
 
           <section class="lesson-section">
-            <h3><span class="step">${++step}</span> Figurat dhe fjalitë zyrtare</h3>
-            <p class="small muted">Nga Manuali i DPSHTRR. Fshih përgjigjet për t’u vetëtestuar, pastaj kliko mbi një fjali për ta parë.</p>
-            <div class="flex mb-2"><button class="btn btn-outline btn-sm" data-action="toggle-answers">🙈 Fshih përgjigjet</button><span class="small muted">${total} fjali</span></div>
+            <h3><span class="step">${++step}</span> Figurat dhe rregullat e sakta</h3>
+            <p class="small muted">Nga Manuali i DPSHTRR – shfaqen vetëm fjalitë e sakta (${correctCount} fjali). Fjalitë e gabuara i gjen te testet.</p>
             ${manualBlocks(id) || '<p class="muted">Materiali i manualit nuk u ngarkua.</p>'}
           </section>
 
