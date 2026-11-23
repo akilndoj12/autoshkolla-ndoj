@@ -24,7 +24,7 @@
     document.getElementById('footer-about').textContent = s.about;
     document.getElementById('footer-contact').innerHTML = `
       <li>📞 <a href="tel:+355${String(s.phone).replace(/\D/g, '').replace(/^0/, '')}">${esc(s.phone)}</a></li>
-      <li>✉️ <a href="mailto:${esc(s.email)}">${esc(s.email)}</a></li>
+      ${s.email ? `<li>✉️ <a href="mailto:${esc(s.email)}">${esc(s.email)}</a></li>` : ''}
       <li>📍 ${esc(s.address)}</li>`;
     document.getElementById('year').textContent = new Date().getFullYear();
   }

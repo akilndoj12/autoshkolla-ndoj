@@ -114,7 +114,7 @@
           <h3>Na kontaktoni</h3>
           <ul class="plain" style="display:grid;gap:12px">
             <li>📞 <a href="${telHref(s.phone)}"><strong>${esc(s.phone)}</strong></a></li>
-            <li>✉️ <a href="mailto:${esc(s.email)}">${esc(s.email)}</a></li>
+            ${s.email ? `<li>✉️ <a href="mailto:${esc(s.email)}">${esc(s.email)}</a></li>` : ''}
             <li>🌐 ${esc(s.website)}</li>
             <li>📍 ${esc(s.address)}</li>
           </ul>

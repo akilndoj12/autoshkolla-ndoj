@@ -89,6 +89,10 @@
           db.site = s.site;
           db.schools = db.schools.filter((x) => x.id !== 's1'); db.schools.unshift(s.schools[0]);
         }
+        if ((db.version || 1) < 4) {   // email-i info@autoshkollandoj.com nuk ekziston
+          if (db.site.email === 'info@autoshkollandoj.com') db.site.email = '';
+          db.schools.forEach((x) => { if (x.email === 'info@autoshkollandoj.com') x.email = ''; });
+        }
         db.version = s.version;
         save();
       } else if (Manual.ready && db.chapters.length < Manual.topics().length) {
