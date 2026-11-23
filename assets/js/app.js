@@ -72,6 +72,13 @@
 
   /* ---------- Ngjarjet (delegim) ---------- */
   app.addEventListener('click', (e) => {
+    const rf = e.target.closest('[data-rfilter]');
+    if (rf) {
+      const list = document.getElementById('review-list');
+      rf.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === rf));
+      list.dataset.filter = rf.dataset.rfilter;
+      return;
+    }
     const rev = e.target.closest('[data-reveal]');
     if (rev) { rev.classList.toggle('show'); return; }
     const opt = e.target.closest('.option');

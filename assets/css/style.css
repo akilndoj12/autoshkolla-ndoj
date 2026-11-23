@@ -392,3 +392,24 @@ table.data th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04
 .tbadge.ok { color: var(--green-dark); } .tbadge.no { color: var(--red-dark); }
 .test-main .tbadge { color: #fff; }
 @media (max-width: 420px) { .test-grid { grid-template-columns: 1fr 1fr; } .test-btn.test-main { grid-column: 1 / -1; } }
+
+/* ---------- Rishikimi i përgjigjeve: jeshile = saktë, e kuqe = gabim ---------- */
+.review-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+.review-filter button { font: inherit; font-weight: 700; font-size: .9rem; padding: 8px 14px; border-radius: 99px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; }
+.review-filter button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.review-list { display: grid; gap: 12px; }
+.review-list[data-filter="ok"] .rv-no, .review-list[data-filter="no"] .rv-ok { display: none; }
+.rv { border-radius: 14px; border: 2px solid; overflow: hidden; background: #fff; }
+.rv-ok { border-color: #34a853; background: #eef9f1; }
+.rv-no { border-color: #e5483d; background: #fdeeed; }
+.rv-head { display: flex; align-items: center; gap: 10px; padding: 8px 14px; color: #fff; font-weight: 800; letter-spacing: .03em; }
+.rv-ok .rv-head { background: #1e8e3e; }
+.rv-no .rv-head { background: #d93025; }
+.rv-num { background: rgba(255,255,255,.25); border-radius: 8px; padding: 1px 9px; }
+.rv-body { display: flex; gap: 14px; align-items: flex-start; padding: 14px; }
+.rv-text { font-weight: 700; color: var(--ink); font-size: 1.05rem; margin-bottom: 10px; }
+.rv-answers { display: flex; gap: 8px; flex-wrap: wrap; }
+.rv-pill { font-weight: 800; padding: 6px 14px; border-radius: 10px; font-size: .95rem; }
+.pill-ok { background: #1e8e3e; color: #fff; }
+.pill-no { background: #d93025; color: #fff; }
+@media (max-width: 600px) { .rv-body { flex-direction: column; } .review-fig { margin: 0 auto; } }

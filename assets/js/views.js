@@ -446,30 +446,41 @@
             ? `<div class="big ${pass ? 'result-pass' : 'result-fail'}">${pass ? '✓ KALON' : '✗ NUK KALON'}</div>
                <p class="mt-2">${esc(s.catName)} · <strong>${rec.correct}</strong> të sakta, <strong>${rec.errors}</strong> gabime (lejohen maks. ${rec.maxErrors})</p>`
             : `<div class="big ${pass ? 'result-pass' : ''}">${rec.correct} / ${rec.total}</div>
-               <p class="mt-2">${pass ? 'Shkëlqyeshëm! Të gjitha përgjigjet janë të sakta.' : `Ke ${rec.errors} përgjigje të gabuara. Shiko shpjegimet më poshtë.`}</p>`}
+               <p class="mt-2">${pass ? 'Shkëlqyeshëm! Të gjitha përgjigjet janë të sakta.' : `Ke ${rec.errors} përgjigje të gabuara. Shiko përgjigjet më poshtë: jeshile = të sakta, të kuqe = gabime.`}</p>`}
           <p class="muted small">Koha: ${mm} min ${ss} sek</p>
           ${saved ? '<span class="badge badge-green">Rezultati u ruajt në profilin tënd</span>' : '<span class="badge">Rezultati nuk u ruajt – <a href="#/regjistrohu">krijo llogari</a> për ta ruajtur</span>'}
           <div class="btn-row mt-2" style="justify-content:center">
             <button class="btn btn-blue" data-action="q-retry">↻ Përsërit ${isExam ? 'provimin' : 'testin'}</button>
             ${isExam ? `${s.testNo && s.testNo < FIXED_TESTS ? `<a class="btn btn-green" href="#/provimi/${s.cat}/${s.testNo + 1}">Testi ${s.testNo + 1} →</a>` : ''}<a class="btn btn-outline" href="#/provimi/${s.cat}">Të gjitha testet</a>` : `<a class="btn btn-outline" href="#/leksione/${s.chapterId}">Kthehu te leksioni</a>`}
-            ${wrong.length ? '<button class="btn btn-outline" data-action="scroll-review">Shiko gabimet</button>' : ''}
+            <button class="btn btn-outline" data-action="scroll-review">Shiko përgjigjet</button>
           </div>
         </div>
 
-        ${wrong.length ? `
-        <h2 class="mt-3" id="rishikimi">Përgjigjet e gabuara (${wrong.length})</h2>
-        ${wrong.map((r) => `
-          <div class="review-item is-wrong">
-            <div class="flex" style="align-items:flex-start">
+        <div class="flex between mt-3" id="rishikimi">
+          <h2 class="mb-0">Përgjigjet e tua</h2>
+          <div class="review-filter" role="tablist">
+            <button class="active" data-rfilter="all">Të gjitha (${results.length})</button>
+            <button data-rfilter="ok">✓ Të sakta (${results.length - wrong.length})</button>
+            <button data-rfilter="no">✗ Të gabuara (${wrong.length})</button>
+          </div>
+        </div>
+        <div class="review-list mt-2" id="review-list">
+        ${results.map((r, i) => `
+          <div class="rv ${r.ok ? 'rv-ok' : 'rv-no'}">
+            <div class="rv-head"><span class="rv-num">${i + 1}</span><span class="rv-status">${r.ok ? '✓ PËRGJIGJE E SAKTË' : (r.a === null || r.a === undefined ? '✗ PA PËRGJIGJE' : '✗ PËRGJIGJE E GABUAR')}</span></div>
+            <div class="rv-body">
               ${r.q.fig || r.q.sign ? `<div class="review-fig">${figHtml(r.q)}</div>` : ''}
               <div style="flex:1">
-                <strong>${esc(r.q.text)}</strong>
-                <div class="ans">Përgjigja jote: <span style="color:var(--red)">${this.answerText(r.q, r.a)}</span></div>
-                <div class="ans">Përgjigja e saktë: <strong style="color:var(--green)">${this.answerText(r.q, r.q.answer)}</strong></div>
-                ${r.q.explain ? `<div class="explain">💡 ${esc(r.q.explain)}</div>` : ''}
+                <div class="rv-text">${esc(r.q.text)}</div>
+                <div class="rv-answers">
+                  <span class="rv-pill ${r.ok ? 'pill-ok' : 'pill-no'}">Përgjigja jote: ${this.answerText(r.q, r.a)}</span>
+                  ${r.ok ? '' : `<span class="rv-pill pill-ok">Përgjigja e duhur: ${this.answerText(r.q, r.q.answer)}</span>`}
+                </div>
+                ${!r.ok && r.q.explain ? `<div class="explain">💡 ${esc(r.q.explain)}</div>` : ''}
               </div>
             </div>
-          </div>`).join('')}` : ''}
+          </div>`).join('')}
+        </div>
       </div>`;
     }
   };
