@@ -148,13 +148,13 @@ main { min-height: 60vh; outline: none; }
 .hero-inner { display: grid; grid-template-columns: 1.3fr 1fr; gap: 36px; align-items: center; padding: 48px 0; }
 .hero h1 span { color: var(--green); }
 .hero .lead { font-size: 1.15rem; color: var(--text); max-width: 52ch; }
-.hero-logo { justify-self: center; width: min(360px, 100%); mix-blend-mode: multiply; }
+.hero-logo { justify-self: center; width: min(400px, 100%); height: auto; aspect-ratio: 1 / 1; object-fit: contain; mix-blend-mode: multiply; }
 .hero-by { font-weight: 600; color: var(--green-dark); }
 @media (max-width: 800px) {
   .hero-inner { grid-template-columns: 1fr; padding: 28px 0; text-align: center; }
   .hero .btn-row { justify-content: center; }
   .hero .lead { margin-inline: auto; }
-  .hero-logo { width: 220px; grid-row: 1; }
+  .hero-logo { width: 100%; max-width: 420px; height: auto; grid-row: 1; }
 }
 
 .feature { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit; }
