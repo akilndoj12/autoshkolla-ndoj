@@ -430,56 +430,72 @@
         saved = Store.addTest(rec);
       }
       s.result = { results, rec, saved };
+      s.idx = 0;
       App.render();
+      window.scrollTo(0, 0);
     },
 
+    /* Pas "Përfundo": i njëjti test, por i ngjyrosur (jeshile = saktë, e kuqe = gabim) */
     renderResult() {
       const s = this.state, { results, rec, saved } = s.result;
-      const wrong = results.filter((r) => !r.ok);
       const isExam = s.mode === 'exam';
       const pass = isExam ? rec.passed : rec.correct === rec.total;
+      const total = results.length;
+      const r = results[s.idx], q = r.q, a = r.a;
+      const unanswered = a === null || a === undefined;
       const mm = Math.floor(rec.durationSec / 60), ss = rec.durationSec % 60;
+
+      const btnCls = (val) => (val === q.answer ? 'correct' : (val === a ? 'wrong' : 'dim'));
+      const mark = (val) => (val === q.answer ? ' ✓' : (val === a ? ' ✗' : ''));
+      const optionsHtml = q.type === 'tf'
+        ? `<div class="options tf review">
+            <button class="option ${btnCls(true)}" disabled>Saktë${mark(true)}</button>
+            <button class="option ${btnCls(false)}" disabled>Gabim${mark(false)}</button>
+          </div>`
+        : `<div class="options review">${q.options.map((o, i) => `
+            <button class="option ${btnCls(i)}" disabled><span class="letter">${'ABCDEF'[i]}</span>${esc(o)}${mark(i)}</button>`).join('')}</div>`;
+      const verdict = r.ok ? '✓ U përgjigje saktë'
+        : unanswered ? `✗ Nuk u përgjigje – përgjigja e duhur është „${this.answerText(q, q.answer)}“`
+        : `✗ Gabove – ti zgjodhe „${this.answerText(q, a)}“, përgjigja e duhur është „${this.answerText(q, q.answer)}“`;
+
+      const nextTest = isExam && s.testNo && s.testNo < FIXED_TESTS ? `<a class="btn btn-sm btn-light" href="#/provimi/${s.cat}/${s.testNo + 1}">Testi ${s.testNo + 1} →</a>` : '';
+      const back = isExam ? `<a class="btn btn-sm btn-light" href="#/provimi/${s.cat}">Të gjitha testet</a>` : `<a class="btn btn-sm btn-light" href="#/leksione/${s.chapterId}">Kthehu te leksioni</a>`;
+
       return `
       <div class="quiz-wrap">
-        <div class="card result-hero">
-          ${isExam
-            ? `<div class="big ${pass ? 'result-pass' : 'result-fail'}">${pass ? '✓ KALON' : '✗ NUK KALON'}</div>
-               <p class="mt-2">${esc(s.catName)} · <strong>${rec.correct}</strong> të sakta, <strong>${rec.errors}</strong> gabime (lejohen maks. ${rec.maxErrors})</p>`
-            : `<div class="big ${pass ? 'result-pass' : ''}">${rec.correct} / ${rec.total}</div>
-               <p class="mt-2">${pass ? 'Shkëlqyeshëm! Të gjitha përgjigjet janë të sakta.' : `Ke ${rec.errors} përgjigje të gabuara. Shiko përgjigjet më poshtë: jeshile = të sakta, të kuqe = gabime.`}</p>`}
-          <p class="muted small">Koha: ${mm} min ${ss} sek</p>
+        <div class="res-bar ${pass ? 'pass' : 'fail'}">
+          <span class="res-big">${isExam ? (pass ? '✓ KALON' : '✗ NUK KALON') : `${rec.correct} / ${rec.total}`}</span>
+          <span>${rec.correct} të sakta · ${rec.errors} gabime${isExam ? ` (lejohen maks. ${rec.maxErrors})` : ''} · ${mm} min ${ss} sek</span>
+        </div>
+        <div class="flex between mb-2">
           ${saved ? '<span class="badge badge-green">Rezultati u ruajt në profilin tënd</span>' : '<span class="badge">Rezultati nuk u ruajt – <a href="#/regjistrohu">krijo llogari</a> për ta ruajtur</span>'}
-          <div class="btn-row mt-2" style="justify-content:center">
-            <button class="btn btn-blue" data-action="q-retry">↻ Përsërit ${isExam ? 'provimin' : 'testin'}</button>
-            ${isExam ? `${s.testNo && s.testNo < FIXED_TESTS ? `<a class="btn btn-green" href="#/provimi/${s.cat}/${s.testNo + 1}">Testi ${s.testNo + 1} →</a>` : ''}<a class="btn btn-outline" href="#/provimi/${s.cat}">Të gjitha testet</a>` : `<a class="btn btn-outline" href="#/leksione/${s.chapterId}">Kthehu te leksioni</a>`}
-            <button class="btn btn-outline" data-action="scroll-review">Shiko përgjigjet</button>
+          <div class="btn-row">${back}${nextTest}</div>
+        </div>
+        <div class="quiz-top">
+          <div class="flex">
+            ${isExam ? `<span class="badge badge-red">🚗 ${esc(s.catName)}</span>` : `<span class="badge badge-blue">${esc(s.title)}</span>`}
+            <span class="q-count">Pyetja ${s.idx + 1} nga ${total}</span>
+          </div>
+          <span class="timer">Përfunduar</span>
+        </div>
+        <div class="card">
+          ${q.fig || q.sign ? `<div class="q-figure">${figHtml(q)}</div>` : ''}
+          ${q.source === 'manual' ? `<div class="small muted" style="text-align:center">Nr. ${esc(q.block)}</div>` : ''}
+          <div class="q-text">${esc(q.text)}</div>
+          ${optionsHtml}
+          <div class="verdict ${r.ok ? 'ok' : 'no'}">${verdict}</div>
+          ${!r.ok && q.explain ? `<div class="explain">💡 ${esc(q.explain)}</div>` : ''}
+          <div class="q-nav">
+            <button class="btn btn-outline" data-action="q-prev" ${s.idx === 0 ? 'disabled' : ''}>← Mbrapa</button>
+            <button class="btn btn-blue" data-action="q-next" ${s.idx >= total - 1 ? 'disabled' : ''}>Pyetja tjetër →</button>
           </div>
         </div>
-
-        <div class="flex between mt-3" id="rishikimi">
-          <h2 class="mb-0">Përgjigjet e tua</h2>
-          <div class="review-filter" role="tablist">
-            <button class="active" data-rfilter="all">Të gjitha (${results.length})</button>
-            <button data-rfilter="ok">✓ Të sakta (${results.length - wrong.length})</button>
-            <button data-rfilter="no">✗ Të gabuara (${wrong.length})</button>
-          </div>
+        <div class="flex between mt-2">
+          <span class="small muted">🟩 e saktë · 🟥 gabim — kliko një numër për ta parë</span>
+          <button class="btn btn-blue btn-sm" data-action="q-retry">↻ Përsërit ${isExam ? 'testin' : 'testin'}</button>
         </div>
-        <div class="review-list mt-2" id="review-list">
-        ${results.map((r, i) => `
-          <div class="rv ${r.ok ? 'rv-ok' : 'rv-no'}">
-            <div class="rv-head"><span class="rv-num">${i + 1}</span><span class="rv-status">${r.ok ? '✓ PËRGJIGJE E SAKTË' : (r.a === null || r.a === undefined ? '✗ PA PËRGJIGJE' : '✗ PËRGJIGJE E GABUAR')}</span></div>
-            <div class="rv-body">
-              ${r.q.fig || r.q.sign ? `<div class="review-fig">${figHtml(r.q)}</div>` : ''}
-              <div style="flex:1">
-                <div class="rv-text">${esc(r.q.text)}</div>
-                <div class="rv-answers">
-                  <span class="rv-pill ${r.ok ? 'pill-ok' : 'pill-no'}">Përgjigja jote: ${this.answerText(r.q, r.a)}</span>
-                  ${r.ok ? '' : `<span class="rv-pill pill-ok">Përgjigja e duhur: ${this.answerText(r.q, r.q.answer)}</span>`}
-                </div>
-                ${!r.ok && r.q.explain ? `<div class="explain">💡 ${esc(r.q.explain)}</div>` : ''}
-              </div>
-            </div>
-          </div>`).join('')}
+        <div class="q-dots" aria-label="Lista e pyetjeve">
+          ${results.map((x, i) => `<button class="${x.ok ? 'd-ok' : 'd-no'} ${i === s.idx ? 'current' : ''}" data-goto="${i}" aria-label="Pyetja ${i + 1}: ${x.ok ? 'e saktë' : 'gabim'}">${i + 1}</button>`).join('')}
         </div>
       </div>`;
     }

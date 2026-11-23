@@ -413,3 +413,19 @@ table.data th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04
 .pill-ok { background: #1e8e3e; color: #fff; }
 .pill-no { background: #d93025; color: #fff; }
 @media (max-width: 600px) { .rv-body { flex-direction: column; } .review-fig { margin: 0 auto; } }
+
+/* ---------- Testi pas përfundimit (i ngjyrosur) ---------- */
+.res-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 18px; border-radius: 14px; color: #fff; font-weight: 800; margin-bottom: 12px; }
+.res-bar.fail { background: #d93025; } .res-bar.pass { background: #1e8e3e; }
+.res-bar .res-big { font-size: 1.5rem; }
+.btn-light { background: #fff; border-color: var(--line); color: var(--ink); }
+.options.review .option { cursor: default; opacity: 1; }
+.options.review .option.correct { background: #1e8e3e; color: #fff; border-color: #1e8e3e; }
+.options.review .option.wrong { background: #d93025; color: #fff; border-color: #d93025; }
+.options.review .option.dim { opacity: .55; }
+.options.review .option.correct .letter, .options.review .option.wrong .letter { background: rgba(255,255,255,.25); border-color: transparent; color: #fff; }
+.verdict { margin-top: 14px; padding: 12px 16px; border-radius: 12px; font-weight: 800; font-size: 1.05rem; }
+.verdict.ok { background: #e8f5ec; color: #146c2e; } .verdict.no { background: #fdecea; color: #b3261e; }
+.q-dots button.d-ok { background: #1e8e3e; color: #fff; border-color: #1e8e3e; }
+.q-dots button.d-no { background: #d93025; color: #fff; border-color: #d93025; }
+.q-dots button.d-ok.current, .q-dots button.d-no.current { outline: 3px solid #111; outline-offset: 1px; }
