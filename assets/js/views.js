@@ -357,8 +357,8 @@
       const total = s.questions.length;
       const optionsHtml = q.type === 'tf'
         ? `<div class="options tf">
-            <button class="option ${a === true ? 'selected' : ''}" data-answer="true"><span class="letter">S</span>E saktë</button>
-            <button class="option ${a === false ? 'selected' : ''}" data-answer="false"><span class="letter">G</span>E gabuar</button>
+            <button class="option ${a === true ? 'selected' : ''}" data-answer="true">Saktë</button>
+            <button class="option ${a === false ? 'selected' : ''}" data-answer="false">Gabim</button>
           </div>`
         : `<div class="options">${q.options.map((o, i) => `
             <button class="option ${a === i ? 'selected' : ''}" data-answer="${i}"><span class="letter">${'ABCDEF'[i]}</span>${esc(o)}</button>`).join('')}</div>`;
@@ -375,7 +375,7 @@
         </div>
         <div class="progress mb-2"><div style="width:${Math.round((answeredCount / total) * 100)}%"></div></div>
         <div class="card">
-          ${q.type === 'tf' ? '<div class="small muted">Vlerëso fjalinë: e saktë apo e gabuar?</div>' : ''}
+          ${q.type === 'tf' ? '<div class="small muted">Vlerëso fjalinë: Saktë apo Gabim?</div>' : ''}
           ${q.fig || q.sign ? `<div class="q-figure">${figHtml(q)}</div>` : ''}
           ${q.source === 'manual' ? `<div class="small muted" style="text-align:center">Nr. ${esc(q.block)}</div>` : ''}
           <div class="q-text">${esc(q.text)}</div>
@@ -399,7 +399,7 @@
 
     answerText(q, a) {
       if (a === null || a === undefined) return '<em>Pa përgjigje</em>';
-      if (q.type === 'tf') return a ? 'E saktë' : 'E gabuar';
+      if (q.type === 'tf') return a ? 'Saktë' : 'Gabim';
       return esc(q.options[a]);
     },
 
@@ -837,7 +837,7 @@
           ${wrongList.length ? wrongList.slice(0, 15).map((w) => `
             <div class="review-item is-wrong">
               <div class="flex between" style="align-items:flex-start">${w.q.fig || w.q.sign ? `<div class="review-fig">${figHtml(w.q)}</div>` : ''}<strong style="flex:1">${esc(w.q.text)}</strong><span class="badge badge-red">${w.n}×</span></div>
-              <div class="ans small">E saktë: <strong style="color:var(--green)">${Quiz.answerText(w.q, w.q.answer)}</strong></div>
+              <div class="ans small">Përgjigja e saktë: <strong style="color:var(--green)">${Quiz.answerText(w.q, w.q.answer)}</strong></div>
               ${w.q.explain ? `<div class="explain">💡 ${esc(w.q.explain)}</div>` : ''}
             </div>`).join('') : '<p class="muted">Asnjë gabim i regjistruar. 👏</p>'}
         </div>

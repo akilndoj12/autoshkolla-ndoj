@@ -178,10 +178,10 @@
     } : { chapter: qFilter || (Store.chapters()[0] || {}).id, type: 'tf', tfAnswer: 'true', cats: Store.categories().map((c) => c.id), mcAnswer: 1 };
     openForm(q ? 'Ndrysho pyetjen' : 'Pyetje e re', [
       { name: 'chapter', label: 'Kapitulli', type: 'select', options: chapterOpts() },
-      { name: 'type', label: 'Lloji', type: 'select', options: [['tf', 'E saktë / E gabuar (fjali)'], ['mc', 'Me alternativa']] },
+      { name: 'type', label: 'Lloji', type: 'select', options: [['tf', 'Saktë / Gabim (fjali)'], ['mc', 'Me alternativa']] },
       { name: 'text', label: 'Teksti i pyetjes / fjalia', type: 'textarea', rows: 3 },
       { name: 'sign', label: 'Figura', type: 'select', options: signOpts() },
-      { name: 'tfAnswer', label: 'Përgjigja (për S/G)', type: 'select', options: [['true', 'E saktë'], ['false', 'E gabuar']] },
+      { name: 'tfAnswer', label: 'Përgjigja (për S/G)', type: 'select', options: [['true', 'Saktë'], ['false', 'Gabim']] },
       { name: 'options', label: 'Alternativat (për pyetje me alternativa – një për rresht)', type: 'textarea', rows: 4 },
       { name: 'mcAnswer', label: 'Numri i alternativës së saktë (1, 2, 3…)', type: 'number' },
       { name: 'explain', label: 'Shpjegimi (shfaqet kur nxënësi gabon)', type: 'textarea', rows: 2 },

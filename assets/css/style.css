@@ -242,7 +242,8 @@ main { min-height: 60vh; outline: none; }
 .option.wrong { border-color: var(--red); background: var(--red-soft); }
 .option.wrong .letter { background: var(--red); border-color: var(--red); color: #fff; }
 .options.tf { grid-template-columns: 1fr 1fr; }
-.options.tf .option { justify-content: center; font-weight: 800; font-size: 1.15rem; }
+.options.tf .option { justify-content: center; font-weight: 800; font-size: 1.2rem; }
+.options.tf .option.selected { background: var(--blue); color: #fff; }
 .q-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
 .q-dots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
 .q-dots button {
