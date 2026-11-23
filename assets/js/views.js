@@ -593,12 +593,12 @@
     <div class="container page-head">
       <a href="#/provimi" class="btn btn-ghost btn-sm">← Të gjitha kategoritë</a>
       <h1 class="mt-1">${c.icon} ${esc(c.name)} <span class="muted" style="font-size:.6em">${esc(c.label)}</span></h1>
-      <p>Çdo test ka ${c.questions} pyetje, ${c.minutes} minuta dhe lejohen maks. ${c.maxErrors} gabime. <strong>Simulimi i testit zyrtar</strong> zgjedh pyetje të reja çdo herë; <strong>Testet 1–${FIXED_TESTS}</strong> kanë gjithmonë të njëjtat pyetje, që të mund t’i përsërisësh.</p>
+      <p>Çdo test ka ${c.questions} pyetje, ${c.minutes} minuta dhe lejohen maks. ${c.maxErrors} gabime. <strong>Testi i rastësishëm</strong> zgjedh pyetje të reja çdo herë; <strong>Testet 1–${FIXED_TESTS}</strong> kanë gjithmonë të njëjtat pyetje, që të mund t’i përsërisësh.</p>
       ${p ? `<p class="small muted">Ke kryer ${done} nga ${FIXED_TESTS} testet.</p>` : guestNotice()}
     </div>
     <div class="container section-sm">
       <div class="test-grid">
-        <a class="test-btn test-main" href="#/provimi/${c.id}/rastesishem">🎲 Simulim i Testit Zyrtar ${badge(results[0])}</a>
+        <a class="test-btn test-main" href="#/provimi/${c.id}/rastesishem">Bëj test të rastësishëm ${badge(results[0])}</a>
         ${Array.from({ length: FIXED_TESTS }, (_, i) => i + 1).map((n) => `<a class="test-btn ${results[n] ? (results[n].passed ? 'is-ok' : 'is-no') : ''}" href="#/provimi/${c.id}/${n}">Testi ${n}${badge(results[n])}</a>`).join('')}
       </div>
     </div>`;
@@ -615,7 +615,7 @@
       if (wait) return wait;
       const qs = buildExam(c, testNo);
       if (!qs.length) return `<div class="container section empty">Nuk ka ende pyetje për ${esc(c.name)}.</div>`;
-      Quiz.start({ mode: 'exam', cat: c.id, testNo, catName: c.name + (testNo ? ` · Testi ${testNo}` : ' · Simulim'), minutes: c.minutes, maxErrors: c.maxErrors, questions: qs });
+      Quiz.start({ mode: 'exam', cat: c.id, testNo, catName: c.name + (testNo ? ` · Testi ${testNo}` : ' · Test i rastësishëm'), minutes: c.minutes, maxErrors: c.maxErrors, questions: qs });
     }
     return `<div class="container section-sm">${Quiz.state.finished ? Quiz.renderResult() : Quiz.renderQuestion()}</div>`;
   }
@@ -846,7 +846,7 @@
         <div class="card">
           <h3>Rezultatet e provimeve</h3>
           ${p.exams.length ? `<div class="table-wrap"><table class="data"><thead><tr><th>Data</th><th>Testi</th><th>Gabime</th><th>Rezultati</th></tr></thead><tbody>
-            ${[...p.exams].reverse().map((e) => `<tr><td>${fmtDate(e.date)}</td><td>${esc(e.cat)} · ${e.testNo ? 'Testi ' + e.testNo : 'Simulim'}</td><td>${e.errors}/${e.total}</td>
+            ${[...p.exams].reverse().map((e) => `<tr><td>${fmtDate(e.date)}</td><td>${esc(e.cat)} · ${e.testNo ? 'Testi ' + e.testNo : 'Test i rastësishëm'}</td><td>${e.errors}/${e.total}</td>
               <td>${e.passed ? '<span class="badge badge-green">Kalon</span>' : '<span class="badge badge-red">Nuk kalon</span>'}</td></tr>`).join('')}
           </tbody></table></div>` : `<p class="muted">Asnjë provim ende. ${!opts.admin ? '<a href="#/provimi">Bëj të parin</a>' : ''}</p>`}
         </div>
