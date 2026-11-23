@@ -31,6 +31,13 @@
     };
   }
 
+  let memSession = null;
+  const sess = {
+    get() { try { return localStorage.getItem(SESSION); } catch (e) { return memSession; } },
+    set(v) { memSession = v; try { localStorage.setItem(SESSION, v); } catch (e) {} },
+    clear() { memSession = null; try { localStorage.removeItem(SESSION); } catch (e) {} }
+  };
+
   let db;
   function load() {
     try {
@@ -92,7 +99,7 @@
 
     /* ---------- Llogaritë ---------- */
     currentUser() {
-      const id = localStorage.getItem(SESSION);
+      const id = sess.get();
       return id ? db.users.find((u) => u.id === id) || null : null;
     },
     isAdmin() { const u = this.currentUser(); return !!u && u.role === 'admin'; },
@@ -102,17 +109,17 @@
       const user = { id: uid('u'), name: name.trim(), email, phone: (phone || '').trim(), category: category || 'B', role: 'student', passHash: await hash(password), createdAt: new Date().toISOString() };
       db.users.push(user);
       save();
-      localStorage.setItem(SESSION, user.id);
+      sess.set(user.id);
       return user;
     },
     async login(email, password) {
       email = email.trim().toLowerCase();
       const user = db.users.find((u) => u.email === email);
       if (!user || user.passHash !== (await hash(password))) throw new Error('Email-i ose fjalëkalimi është i pasaktë.');
-      localStorage.setItem(SESSION, user.id);
+      sess.set(user.id);
       return user;
     },
-    logout() { localStorage.removeItem(SESSION); },
+    logout() { sess.clear(); },
     students() { return db.users.filter((u) => u.role === 'student'); },
     deleteUser(id) {
       db.users = db.users.filter((u) => u.id !== id);

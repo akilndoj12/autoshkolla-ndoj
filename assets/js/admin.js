@@ -2,7 +2,7 @@
    PANELI I ADMINISTRATORIT
    ========================================================== */
 (function () {
-  const { esc, toast, fmtDate } = Views;
+  const { esc, toast, fmtDate, ask } = Views;
   let tab = 'overview';
   let qFilter = '';
 
@@ -325,29 +325,30 @@
     const qf = root.querySelector('#q-filter');
     if (qf) qf.addEventListener('change', () => { qFilter = qf.value; App.render(); });
 
-    root.querySelectorAll('[data-admin]').forEach((b) => b.addEventListener('click', () => {
+    root.querySelectorAll('[data-admin]').forEach((b) => b.addEventListener('click', async () => {
       const id = b.dataset.id;
       switch (b.dataset.admin) {
         case 'lesson-new': return editLesson();
         case 'lesson-edit': return editLesson(id);
         case 'lesson-del':
-          if (confirm('Të fshihet ky kapitull? Pyetjet e tij mbeten pa kapitull.')) { Store.remove('chapters', id); App.render(); toast('Kapitulli u fshi'); }
+          if (await ask('Të fshihet ky kapitull? Pyetjet e tij mbeten pa kapitull.', 'Po', true)) { Store.remove('chapters', id); App.render(); toast('Kapitulli u fshi'); }
           return;
         case 'q-new': return editQuestion();
         case 'q-edit': return editQuestion(id);
-        case 'q-del': if (confirm('Të fshihet kjo pyetje?')) { Store.remove('questions', id); App.render(); toast('Pyetja u fshi'); } return;
+        case 'q-del': if (await ask('Të fshihet kjo pyetje?', 'Po', true)) { Store.remove('questions', id); App.render(); toast('Pyetja u fshi'); } return;
         case 'sch-new': return editSchool();
         case 'sch-edit': return editSchool(id);
-        case 'sch-del': if (confirm('Të fshihet kjo autoshkollë?')) { Store.remove('schools', id); App.render(); toast('U fshi'); } return;
+        case 'sch-del': if (await ask('Të fshihet kjo autoshkollë?', 'Po', true)) { Store.remove('schools', id); App.render(); toast('U fshi'); } return;
         case 'stu-view': { const u = Store.db.users.find((x) => x.id === id); return openHtml(u.name + ' – ' + u.email, Views.studentReport(u, { admin: true })); }
-        case 'stu-del': if (confirm('Të fshihet ky nxënës dhe gjithë përparimi i tij?')) { Store.deleteUser(id); App.render(); toast('Nxënësi u fshi'); } return;
+        case 'stu-del': if (await ask('Të fshihet ky nxënës dhe gjithë përparimi i tij?', 'Po', true)) { Store.deleteUser(id); App.render(); toast('Nxënësi u fshi'); } return;
         case 'export': {
+          if (window.top !== window) { navigator.clipboard.writeText(JSON.stringify(Store.db)).then(() => toast('Të dhënat u kopjuan (JSON)'), () => toast('Shkarkimi nuk lejohet në këtë pamje')); return; }
           const blob = new Blob([JSON.stringify(Store.db, null, 2)], { type: 'application/json' });
           const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
           a.download = 'autoshkolla-ndoj-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
           return;
         }
-        case 'reset': if (confirm('Të rikthehet përmbajtja fillestare?')) { Store.resetContent(); App.render(); toast('Përmbajtja u rikthye'); } return;
+        case 'reset': if (await ask('Të rikthehet përmbajtja fillestare?', 'Po', true)) { Store.resetContent(); App.render(); toast('Përmbajtja u rikthye'); } return;
       }
     }));
 
@@ -377,10 +378,10 @@
       try {
         const data = JSON.parse(await f.text());
         if (!data.chapters || !data.questions || !data.users) throw new Error('Skedari nuk është kopje e vlefshme.');
-        if (!confirm('Importimi zëvendëson të gjitha të dhënat aktuale. Vazhdo?')) return;
+        if (!(await ask('Importimi zëvendëson të gjitha të dhënat aktuale. Vazhdo?', 'Po, importo', true))) return;
         Object.keys(Store.db).forEach((k) => delete Store.db[k]);
         Object.assign(Store.db, data); Store.save(); toast('Të dhënat u importuan'); App.render();
-      } catch (ex) { alert('Gabim: ' + ex.message); }
+      } catch (ex) { toast('Gabim: ' + ex.message); }
     });
   }
 

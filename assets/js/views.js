@@ -14,6 +14,25 @@
     clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
   }
 
+  /* Dritare konfirmimi brenda faqes (në vend të confirm() të shfletuesit) */
+  function ask(message, okLabel = 'Po, vazhdo', danger = false) {
+    return new Promise((resolve) => {
+      const back = document.createElement('div');
+      back.className = 'modal-back';
+      back.innerHTML = `<div class="modal" role="alertdialog" aria-modal="true" style="width:min(460px,100%)">
+        <p style="font-size:1.08rem;font-weight:600;color:var(--ink)">${esc(message)}</p>
+        <div class="btn-row between mt-2"><button class="btn btn-outline" data-no>Anulo</button>
+        <button class="btn ${danger ? 'btn-red' : 'btn-green'}" data-yes>${esc(okLabel)}</button></div></div>`;
+      const done = (v) => { back.remove(); resolve(v); };
+      back.addEventListener('click', (e) => {
+        if (e.target === back || e.target.hasAttribute('data-no')) done(false);
+        else if (e.target.hasAttribute('data-yes')) done(true);
+      });
+      document.body.appendChild(back);
+      back.querySelector('[data-yes]').focus();
+    });
+  }
+
   function guestNotice() {
     if (Store.currentUser()) return '';
     return `<div class="notice mb-2"><span class="ico">i</span><div>Mund të mësosh dhe të testohesh pa llogari. <a href="#/regjistrohu"><strong>Krijo llogari</strong></a> nëse do që të ruhen rezultatet dhe përparimi yt.</div></div>`;
@@ -323,12 +342,13 @@
       return esc(q.options[a]);
     },
 
-    finish(auto = false) {
+    async finish(auto = false) {
       const s = this.state; if (!s || s.finished) return;
       const unanswered = s.answers.filter((x) => x === null).length;
       if (!auto && unanswered) {
         const extra = s.mode === 'exam' ? ' Pyetjet pa përgjigje llogariten si gabime.' : '';
-        if (!confirm(`Ke ${unanswered} pyetje pa përgjigje.${extra} Do ta dorëzosh?`)) return;
+        if (!(await ask(`Ke ${unanswered} pyetje pa përgjigje.${extra} Do ta dorëzosh?`, 'Po, dorëzo'))) return;
+        if (this.state !== s || s.finished) return;
       }
       s.finished = true;
       if (s.timer) clearInterval(s.timer);
@@ -485,6 +505,19 @@
       </div>`).join('');
   }
 
+  /* Kontrollon nëse hartat e OpenStreetMap mund të ngarkohen (p.sh. bllokohen në pamje paraprake) */
+  let osmProbe = null;
+  function osmAvailable() {
+    if (!osmProbe) osmProbe = new Promise((res) => {
+      const img = new Image(); const t = setTimeout(() => res(false), 4000);
+      img.onload = () => { clearTimeout(t); res(true); };
+      img.onerror = () => { clearTimeout(t); res(false); };
+      img.src = 'https://tile.openstreetmap.org/7/70/48.png';
+    });
+    return osmProbe;
+  }
+  const MAP_OFF = '<div class="map-fallback"><div><div style="font-size:2.4rem">🗺️</div><strong>Harta interaktive</strong><br>Shfaqet kur faqja të jetë online në domain-in e saj.<br>Ndërkohë përdor listën dhe butonin “Shiko në hartë”.</div></div>';
+
   let mapObj = null, markers = {};
   function initSchoolsMap() {
     const el = document.getElementById('map');
@@ -513,8 +546,13 @@
           .bindPopup(`<strong>${esc(s.name)}</strong><br>${esc(s.city)}<br><a href="#/autoshkollat/${s.id}">Profili</a> · <a href="${mapsDir(s)}" target="_blank" rel="noopener">Rruga</a>`);
       });
     };
-    if (window.L) build();
-    else { let tries = 0; const iv = setInterval(() => { tries++; if (window.L || tries > 20) { clearInterval(iv); if (document.getElementById('map') === el) build(); } }, 250); }
+    mapObj = null;
+    osmAvailable().then((ok) => {
+      if (document.getElementById('map') !== el) return;
+      if (!ok) { el.innerHTML = MAP_OFF; return; }
+      if (window.L) build();
+      else { let tries = 0; const iv = setInterval(() => { tries++; if (window.L || tries > 20) { clearInterval(iv); if (document.getElementById('map') === el) build(); } }, 250); }
+    });
   }
 
   function schoolProfile(id) {
@@ -541,7 +579,7 @@
             ${s.phone ? `<a class="btn btn-outline" href="${telHref(s.phone)}">Telefono</a>` : ''}
           </div>
         </div>
-        <div class="card" style="padding:0;overflow:hidden">
+        <div class="card" id="school-map" style="padding:0;overflow:hidden;min-height:340px">
           <iframe title="Harta e ${esc(s.name)}" style="width:100%;height:100%;min-height:340px;border:0" loading="lazy"
             src="https://www.openstreetmap.org/export/embed.html?bbox=${s.lng - 0.02},${s.lat - 0.012},${s.lng + 0.02},${s.lat + 0.012}&layer=mapnik&marker=${s.lat},${s.lng}"></iframe>
         </div>
@@ -696,5 +734,10 @@
     return `<div class="container section empty"><h1>Faqja nuk u gjet</h1><p>Lidhja mund të jetë e pasaktë.</p><a class="btn btn-green" href="#/">Kthehu në kryefaqe</a></div>`;
   }
 
-  window.Views = { home, lessons, lesson, tests, chapterTest, examSelect, exam, schools, initSchoolsMap, schoolProfile, auth, bindAuth, profile, studentReport, notFound, Quiz, toast, esc, fmtDate };
+  function initSchoolProfile() {
+    const box = document.getElementById('school-map'); if (!box) return;
+    osmAvailable().then((ok) => { if (!ok && document.getElementById('school-map') === box) box.innerHTML = MAP_OFF; });
+  }
+
+  window.Views = { home, lessons, lesson, tests, chapterTest, examSelect, exam, schools, initSchoolsMap, schoolProfile, initSchoolProfile, auth, bindAuth, profile, studentReport, notFound, Quiz, toast, esc, fmtDate, ask };
 })();

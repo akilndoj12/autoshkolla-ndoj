@@ -59,6 +59,7 @@
     renderFooter();
 
     if (page === 'autoshkollat' && !id) Views.initSchoolsMap();
+    if (page === 'autoshkollat' && id) Views.initSchoolProfile();
     if (page === 'hyr' || page === 'regjistrohu') Views.bindAuth();
     if (page === 'admin') Admin.bind(app);
     if (Quiz.state && !Quiz.state.finished && Quiz.state.mode === 'exam') Quiz.tick();
