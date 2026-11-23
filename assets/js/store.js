@@ -17,13 +17,28 @@
     return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
   }
 
+  /* 25 temat e manualit + përmbajtja shtesë e seed-it (objektiva, teori, shembuj) */
+  function buildChapters() {
+    const extra = {};
+    clone(window.SEED.chapters).forEach((c) => { extra[c.id] = c; });
+    if (!window.Manual || !Manual.ready) return Object.values(extra);
+    return Manual.topics().map((t) => {
+      const e = extra[t.id] || {};
+      return {
+        id: t.id, order: t.num, title: t.title, fullTitle: t.fullTitle,
+        objectives: e.objectives || [], theory: e.theory || [], signs: e.signs || [],
+        video: e.video || '', examples: e.examples || [], summary: e.summary || ''
+      };
+    });
+  }
+
   function freshDb() {
     const s = clone(window.SEED);
     return {
       version: s.version,
       site: s.site,
       categories: s.categories,
-      chapters: s.chapters,
+      chapters: buildChapters(),
       questions: s.questions,
       schools: s.schools,
       users: [],            // {id, name, email, phone, category, passHash, role, createdAt}
@@ -63,7 +78,19 @@
   }
 
   const Store = {
-    async init() { load(); await ensureAdmin(); },
+    async init() {
+      if (window.Manual) await Manual.load();
+      load();
+      // Migrimi nga versioni 1 (pyetje shembull) te manuali zyrtar
+      if ((db.version || 1) < window.SEED.version) {
+        const s = clone(window.SEED);
+        db.version = s.version; db.categories = s.categories; db.chapters = buildChapters(); db.questions = [];
+        save();
+      } else if (Manual.ready && db.chapters.length < Manual.topics().length) {
+        db.chapters = buildChapters(); save();
+      }
+      await ensureAdmin();
+    },
     get db() { return db; },
     save,
     uid,
@@ -74,10 +101,11 @@
     category(id) { return db.categories.find((c) => c.id === id); },
     chapters() { return [...db.chapters].sort((a, b) => a.order - b.order); },
     chapter(id) { return db.chapters.find((c) => c.id === id); },
-    questions() { return db.questions; },
-    questionsFor(chapterId) { return db.questions.filter((q) => q.chapter === chapterId); },
-    questionsForCategory(cat) { return db.questions.filter((q) => (q.cats || []).includes(cat)); },
-    question(id) { return db.questions.find((q) => q.id === id); },
+    customQuestions() { return db.questions; },
+    questions() { return db.questions.concat(window.Manual ? Manual.questions : []); },
+    questionsFor(chapterId) { return this.questions().filter((q) => q.chapter === chapterId); },
+    questionsForCategory(cat) { return this.questions().filter((q) => (q.cats || []).includes(cat)); },
+    question(id) { return db.questions.find((q) => q.id === id) || (window.Manual ? Manual.question(id) : null); },
     schools() { return db.schools; },
     school(id) { return db.schools.find((s) => s.id === id); },
 
@@ -93,7 +121,7 @@
     },
     resetContent() {
       const s = clone(window.SEED);
-      Object.assign(db, { site: s.site, categories: s.categories, chapters: s.chapters, questions: s.questions, schools: s.schools });
+      Object.assign(db, { site: s.site, categories: s.categories, chapters: buildChapters(), questions: s.questions, schools: s.schools });
       save();
     },
 

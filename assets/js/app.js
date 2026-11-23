@@ -7,7 +7,7 @@
 
   function parse() {
     const parts = (location.hash.replace(/^#\/?/, '') || '').split('/').filter(Boolean);
-    return { page: parts[0] || '', id: parts[1] ? decodeURIComponent(parts[1]) : null };
+    return { page: parts[0] || '', id: parts[1] ? decodeURIComponent(parts[1]) : null, sub: parts[2] || null };
   }
 
   function renderNav(page) {
@@ -31,8 +31,8 @@
 
   let lastRoute = '';
   function render() {
-    const { page, id } = parse();
-    const route = page + '/' + (id || '');
+    const { page, id, sub } = parse();
+    const route = page + '/' + (id || '') + '/' + (sub || '');
 
     // Kur largohesh nga një test/provim, ndalo kohëmatësin
     if (route !== lastRoute && Quiz.state) {
@@ -45,7 +45,7 @@
     switch (page) {
       case '': html = Views.home(); break;
       case 'leksione': html = id ? Views.lesson(id) : Views.lessons(); break;
-      case 'teste': html = id ? Views.chapterTest(id) : Views.tests(); break;
+      case 'teste': html = id ? Views.chapterTest(id, sub) : Views.tests(); break;
       case 'provimi': html = id ? Views.exam(id) : Views.examSelect(); break;
       case 'autoshkollat': html = id ? Views.schoolProfile(id) : Views.schools(); break;
       case 'hyr': html = Views.auth('login'); break;
@@ -72,6 +72,8 @@
 
   /* ---------- Ngjarjet (delegim) ---------- */
   app.addEventListener('click', (e) => {
+    const rev = e.target.closest('[data-reveal]');
+    if (rev) { rev.classList.toggle('show'); return; }
     const opt = e.target.closest('.option');
     if (opt && Quiz.state && !Quiz.state.finished) {
       const raw = opt.dataset.answer;
@@ -93,6 +95,13 @@
         Quiz.stop();
         render();
         toast(s && s.mode === 'exam' ? 'Provim i ri me pyetje të reja' : 'Testi filloi përsëri');
+        break;
+      }
+      case 'toggle-answers': {
+        const list = document.getElementById('manual-list'); if (!list) break;
+        const hidden = list.classList.toggle('hide-answers');
+        list.querySelectorAll('.show').forEach((x) => x.classList.remove('show'));
+        act.textContent = hidden ? '👁 Shfaq përgjigjet' : '🙈 Fshih përgjigjet';
         break;
       }
       case 'scroll-review': { const r = document.getElementById('rishikimi'); if (r) r.scrollIntoView({ behavior: 'smooth' }); break; }

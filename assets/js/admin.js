@@ -146,25 +146,25 @@
   }
 
   function questionsTab() {
-    const list = Store.questions().filter((q) => !qFilter || q.chapter === qFilter);
+    const list = qFilter ? Store.questionsFor(qFilter) : Store.customQuestions();
     return `
       <div class="admin-toolbar">
         <h2 class="mb-0">Pyetjet & testet</h2>
         <div class="flex">
-          <select id="q-filter" style="min-width:220px"><option value="">Të gjithë kapitujt</option>${chapterOpts().map(([k, l]) => `<option value="${k}" ${k === qFilter ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+          <select id="q-filter" style="min-width:240px"><option value="">Pyetjet shtesë të adminit (${Store.customQuestions().length})</option>${chapterOpts().map(([k, l]) => `<option value="${k}" ${k === qFilter ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
           <button class="btn btn-green" data-admin="q-new">+ Shto pyetje</button>
         </div>
       </div>
-      <p class="small muted">Pyetjet “E saktë/E gabuar” ndjekin formatin e pyetësorit zyrtar me fjali. Kategoritë e shënuara përcaktojnë në cilin simulim provimi del pyetja; çdo pyetje del edhe në testin e kapitullit të vet.</p>
+      <p class="small muted">Banka përmban ${window.Manual ? Manual.questions.length : 0} fjali zyrtare nga Manuali i DPSHTRR (vetëm për lexim) dhe pyetjet shtesë që shton administratori. Zgjidh një temë për t’i parë.</p>
       <div class="card table-wrap" style="padding:0"><table class="data"><thead><tr><th>Pyetja</th><th>Lloji</th><th>Përgjigja</th><th>Kat.</th><th></th></tr></thead><tbody>
         ${list.map((q) => `<tr>
-          <td>${q.sign ? '🖼️ ' : ''}${esc(q.text)}<div class="small muted">${esc((Store.chapter(q.chapter) || {}).title || '')}</div></td>
+          <td>${q.sign || q.fig ? '🖼️ ' : ''}${esc(q.text)}<div class="small muted">${q.source === 'manual' ? `<span class="badge badge-blue">Manual ${esc(q.block)}</span> ` : ''}${esc((Store.chapter(q.chapter) || {}).title || '')}</div></td>
           <td>${q.type === 'tf' ? 'S/G' : 'Alternativa'}</td>
           <td>${Views.Quiz.answerText(q, q.answer)}</td>
           <td>${(q.cats || []).join(', ') || '<span class="muted">vetëm test</span>'}</td>
-          <td style="white-space:nowrap;text-align:right">
+          <td style="white-space:nowrap;text-align:right">${q.source === 'manual' ? '<span class="small muted">zyrtare</span>' : `
             <button class="btn btn-outline btn-sm" data-admin="q-edit" data-id="${q.id}">Ndrysho</button>
-            <button class="btn btn-ghost btn-sm" data-admin="q-del" data-id="${q.id}" style="color:var(--red)">Fshi</button>
+            <button class="btn btn-ghost btn-sm" data-admin="q-del" data-id="${q.id}" style="color:var(--red)">Fshi</button>`}
           </td></tr>`).join('') || '<tr><td colspan="5" class="empty">Asnjë pyetje.</td></tr>'}
       </tbody></table></div>`;
   }

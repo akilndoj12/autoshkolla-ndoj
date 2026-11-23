@@ -48,7 +48,7 @@
     <section class="hero">
       <div class="container hero-inner">
         <div>
-          <span class="badge badge-green">Platformë online për teorinë e patentës</span>
+          <span class="badge badge-green">${window.Manual && Manual.ready ? Manual.questions.length.toLocaleString('sq-AL') + ' pyetje zyrtare nga manuali i DPSHTRR' : 'Platformë online për teorinë e patentës'}</span>
           <h1 class="mt-1">Mirë se vini në <span>${esc(s.name)}</span></h1>
           <p class="lead">${esc(s.heroText)}</p>
           <p class="hero-by">Krijuar nga ${esc(s.name)} – ${esc(s.slogan)}.</p>
@@ -65,7 +65,7 @@
     <section class="section-sm"><div class="container">
       <div class="card flex between">
         <div><strong>Përshëndetje, ${esc(u.name.split(' ')[0])}!</strong>
-          <div class="muted small">Ke përfunduar ${st.lessonsDone} nga ${st.lessonsTotal} kapituj · ${st.examsDone} provime (${st.examsPassed} kaluar)</div></div>
+          <div class="muted small">Ke përfunduar ${st.lessonsDone} nga ${st.lessonsTotal} tema · ${st.examsDone} provime (${st.examsPassed} kaluar)</div></div>
         <div style="flex:1 1 200px;max-width:320px"><div class="progress"><div style="width:${st.lessonPct}%"></div></div></div>
         <a class="btn btn-outline" href="#/profili">Profili im</a>
       </div>
@@ -76,9 +76,9 @@
         <h2>Çfarë ofron platforma</h2>
         <p class="muted">Gjithçka që të duhet për provimin teorik, në një vend.</p>
         <div class="grid grid-4 mt-2">
-          <a class="card feature" href="#/leksione"><div class="ico-circle">📖</div><h3 class="mb-0">Leksione të qarta</h3><p>Kapituj me tekst, figura, video dhe shembuj nga rruga.</p></a>
-          <a class="card feature" href="#/teste"><div class="ico-circle">✅</div><h3 class="mb-0">Teste praktike</h3><p>Test për çdo kapitull me shpjegim të gabimeve.</p></a>
-          <a class="card feature" href="#/provimi"><div class="ico-circle">⏱️</div><h3 class="mb-0">Simulim provimi</h3><p>Me kohëmatës dhe kufi gabimesh sipas kategorisë.</p></a>
+          <a class="card feature" href="#/leksione"><div class="ico-circle">📖</div><h3 class="mb-0">25 tema mësimore</h3><p>Figurat dhe fjalitë zyrtare të manualit, me përgjigje, shpjegime dhe video.</p></a>
+          <a class="card feature" href="#/teste"><div class="ico-circle">✅</div><h3 class="mb-0">Teste për çdo temë</h3><p>Ushtrohu me pyetjet zyrtare dhe shiko ku gabove.</p></a>
+          <a class="card feature" href="#/provimi"><div class="ico-circle">⏱️</div><h3 class="mb-0">Simulim provimi</h3><p>40 pyetje, 40 minuta, maks. 4 gabime – si në provimin zyrtar.</p></a>
           <a class="card feature" href="#/autoshkollat"><div class="ico-circle">📍</div><h3 class="mb-0">Autoshkollat</h3><p>Harta e autoshkollave në Shqipëri me kontakte.</p></a>
         </div>
       </div>
@@ -129,7 +129,7 @@
     const p = Store.myProgress();
     return `
       <aside class="card chapter-list">
-        <h3>Kapitujt</h3>
+        <h3>Temat</h3>
         ${Store.chapters().map((c) => `
           <a href="#/leksione/${c.id}" class="${c.id === activeId ? 'active' : ''}">
             <span class="num">${c.order}</span><span>${esc(c.title)}</span>
@@ -138,36 +138,71 @@
       </aside>`;
   }
 
+  /* Figura e një pyetjeje (nga manuali ose SVG) */
+  function figHtml(q) {
+    if (q.fig && window.Manual) {
+      const src = Manual.fig(q.fig);
+      return src ? `<img class="mfig" src="${src}" alt="Figura ${esc(q.figLabel || '')}" loading="lazy" />` : '';
+    }
+    if (q.sign) return SIGNS.render(q.sign);
+    return '';
+  }
+  /* Siguron që figurat e temave të jenë ngarkuar; ndërkohë kthen një mesazh pritjeje */
+  function ensureFigs(topicIds) {
+    const ids = [...new Set(topicIds)].filter((id) => id && window.Manual && Manual.topic(id));
+    if (!ids.length || Manual.figsReady(ids)) return null;
+    Manual.loadFigs(ids).then(() => App.render());
+    return `<div class="container section empty"><div class="spinner"></div><p class="mt-2">Duke ngarkuar figurat…</p></div>`;
+  }
+  const TEST_SIZE = 20;
+
   function lessons() {
     const p = Store.myProgress();
     const chs = Store.chapters();
     return `
     <div class="container page-head">
-      <h1>Leksionet</h1>
-      <p>Programi mësimor është i ndarë në kapituj. Çdo kapitull ka objektivat, shpjegimin teorik me figura, video, shembuj praktikë dhe testin përkatës.</p>
+      <h1>Leksionet – 25 temat e programit</h1>
+      <p>Programi ndjek temat e Manualit zyrtar të DPSHTRR për lejedrejtimi të kategorive A1, A2, B1 dhe B. Çdo temë ka figurat dhe fjalitë zyrtare me përgjigjet, shpjegime, video dhe testin përkatës.</p>
       ${guestNotice()}
     </div>
     <div class="container grid grid-3 section-sm">
       ${chs.map((c) => `
         <a class="card feature" href="#/leksione/${c.id}">
-          <div class="flex between"><span class="badge badge-blue">Kapitulli ${c.order}</span>${p && p.lessons[c.id] ? '<span class="badge badge-green">✓ Përfunduar</span>' : ''}</div>
+          <div class="flex between"><span class="badge badge-blue">Tema ${c.order}</span>${p && p.lessons[c.id] ? '<span class="badge badge-green">✓ Përfunduar</span>' : ''}</div>
           <h3 class="mt-1 mb-0">${esc(c.title)}</h3>
-          <p>${esc(c.summary)}</p>
-          <span class="small muted">${Store.questionsFor(c.id).length} pyetje testi · ${(c.signs || []).length} sinjale</span>
+          ${c.summary ? `<p>${esc(c.summary)}</p>` : ''}
+          <span class="small muted">${Store.questionsFor(c.id).length} pyetje</span>
         </a>`).join('')}
     </div>`;
   }
 
   function videoBlock(url) {
-    if (!url) return `<div class="video-box"><div><div style="font-size:2.4rem">▶</div>Video shpjeguese për këtë kapitull do të shtohet së shpejti.</div></div>`;
+    if (!url) return `<div class="video-box"><div><div style="font-size:2.4rem">▶</div>Video shpjeguese për këtë temë do të shtohet së shpejti.</div></div>`;
     const m = url.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/);
     if (m) return `<div class="video-box"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Video e leksionit" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
     return `<div class="video-box"><video src="${esc(url)}" controls style="width:100%;height:100%"></video></div>`;
   }
 
+  /* Materiali zyrtar i temës: figura + fjalitë me përgjigje */
+  function manualBlocks(topicId) {
+    const t = window.Manual && Manual.topic(topicId);
+    if (!t) return '';
+    return `<div class="manual-list" id="manual-list">
+      ${t.blocks.map((b) => `
+        <div class="mblock">
+          ${b.fig ? `<div class="mblock-fig">${figHtml({ fig: b.id, figLabel: b.label })}<span class="small muted">${esc(b.label)}<br>Nr. ${esc(b.id)}</span></div>` : `<div class="small muted mblock-id">Nr. ${esc(b.id)}</div>`}
+          <ol class="mstatements">
+            ${b.items.map(([text, ans]) => `<li data-reveal><span class="mtext">${esc(text)}</span><span class="ans-badge ${ans ? 'ok' : 'no'}">${ans ? 'Saktë' : 'Gabim'}</span></li>`).join('')}
+          </ol>
+        </div>`).join('')}
+    </div>`;
+  }
+
   function lesson(id) {
     const c = Store.chapter(id);
     if (!c) return notFound();
+    const wait = ensureFigs([id]);
+    if (wait) return wait;
     Store.setLastChapter(id);
     const chs = Store.chapters();
     const idx = chs.findIndex((x) => x.id === id);
@@ -175,43 +210,61 @@
     const done = Store.myProgress() && Store.myProgress().lessons[id];
     const pct = Math.round(((idx + (done ? 1 : 0)) / chs.length) * 100);
     const lastTest = Store.myProgress() ? [...Store.myProgress().tests].reverse().find((t) => t.chapterId === id) : null;
+    const total = Store.questionsFor(id).length;
+    const objectives = c.objectives && c.objectives.length ? c.objectives
+      : [`Të njohësh rregullat e temës “${c.title}” sipas manualit zyrtar të DPSHTRR.`, 'Të dallosh fjalitë e sakta nga ato të gabuara për çdo figurë.', 'Të përgatitesh për pyetjet e kësaj teme në provimin teorik.'];
+    const hasTheory = (c.theory && c.theory.length) || (c.signs || []).length;
+    let step = 0;
 
     return `
     <div class="container section-sm">
       <div class="lesson-layout">
         ${chapterNav(id)}
         <article class="card lesson-body">
-          <span class="badge badge-blue">Kapitulli ${c.order} nga ${chs.length}</span>
-          <h2 class="mt-1">${esc(c.title)}</h2>
+          <span class="badge badge-blue">Tema ${c.order} nga ${chs.length}</span>
+          <h2 class="mt-1 mb-0">${esc(c.title)}</h2>
+          ${c.fullTitle && c.fullTitle.toLowerCase() !== c.title.toLowerCase() ? `<p class="small muted mt-1">${esc(c.fullTitle)}</p>` : ''}
 
           <section class="lesson-section">
-            <h3><span class="step">1</span> Objektivat e mësimit</h3>
-            <ul class="objectives">${c.objectives.map((o) => `<li>${esc(o)}</li>`).join('')}</ul>
+            <h3><span class="step">${++step}</span> Objektivat e mësimit</h3>
+            <ul class="objectives">${objectives.map((o) => `<li>${esc(o)}</li>`).join('')}</ul>
           </section>
 
+          ${hasTheory ? `
           <section class="lesson-section">
-            <h3><span class="step">2</span> Shpjegimi teorik</h3>
-            ${c.theory.map((t) => `<p>${esc(t)}</p>`).join('')}
+            <h3><span class="step">${++step}</span> Shpjegimi teorik</h3>
+            ${(c.theory || []).map((t) => `<p>${esc(t)}</p>`).join('')}
             ${(c.signs || []).length ? `<div class="sign-grid">${c.signs.map((k) => `
               <div class="sign-item">${SIGNS.render(k)}<strong>${esc(SIGNS.all[k] ? SIGNS.all[k].name : k)}</strong><span>${esc(SIGNS.all[k] ? SIGNS.all[k].desc : '')}</span></div>`).join('')}</div>` : ''}
+          </section>` : ''}
+
+          <section class="lesson-section">
+            <h3><span class="step">${++step}</span> Figurat dhe fjalitë zyrtare</h3>
+            <p class="small muted">Nga Manuali i DPSHTRR. Fshih përgjigjet për t’u vetëtestuar, pastaj kliko mbi një fjali për ta parë.</p>
+            <div class="flex mb-2"><button class="btn btn-outline btn-sm" data-action="toggle-answers">🙈 Fshih përgjigjet</button><span class="small muted">${total} fjali</span></div>
+            ${manualBlocks(id) || '<p class="muted">Materiali i manualit nuk u ngarkua.</p>'}
           </section>
 
           <section class="lesson-section">
-            <h3><span class="step">3</span> Video shpjeguese</h3>
+            <h3><span class="step">${++step}</span> Video shpjeguese</h3>
             ${videoBlock(c.video)}
           </section>
 
+          ${(c.examples || []).length || c.summary ? `
           <section class="lesson-section">
-            <h3><span class="step">4</span> Shembuj praktikë</h3>
-            ${(c.examples || []).map((e) => `<div class="example"><strong>${esc(e.title)}:</strong> ${esc(e.text)}</div>`).join('') || '<p class="muted">Shembujt do të shtohen.</p>'}
+            <h3><span class="step">${++step}</span> Shembuj praktikë</h3>
+            ${(c.examples || []).map((e) => `<div class="example"><strong>${esc(e.title)}:</strong> ${esc(e.text)}</div>`).join('')}
             ${c.summary ? `<div class="notice notice-green mt-2"><span class="ico">★</span><div><strong>Përmbledhje:</strong> ${esc(c.summary)}</div></div>` : ''}
-          </section>
+          </section>` : ''}
 
           <section class="lesson-section">
-            <h3><span class="step">5</span> Testi i kapitullit</h3>
-            <p>${Store.questionsFor(id).length} pyetje mbi këtë kapitull. Në fund shikon rezultatin dhe shpjegimin e përgjigjeve të gabuara.</p>
+            <h3><span class="step">${++step}</span> Testi i temës</h3>
+            <p>Test me ${Math.min(TEST_SIZE, total)} pyetje të rastësishme nga kjo temë, ose të gjitha ${total} pyetjet. Në fund shikon rezultatin dhe përgjigjet e sakta për gabimet.</p>
             ${lastTest ? `<p class="small muted">Rezultati yt i fundit: <strong>${lastTest.correct}/${lastTest.total}</strong> (${fmtDate(lastTest.date)})</p>` : ''}
-            <a class="btn btn-blue btn-lg" href="#/teste/${id}">☑ Bëj testin e kapitullit</a>
+            <div class="btn-row">
+              <a class="btn btn-blue btn-lg" href="#/teste/${id}">☑ Bëj testin e temës</a>
+              <a class="btn btn-outline btn-lg" href="#/teste/${id}/te-gjitha">Të gjitha pyetjet (${total})</a>
+            </div>
           </section>
 
           <section class="lesson-section">
@@ -220,7 +273,7 @@
             <div class="btn-row mt-2 between">
               ${prev ? `<a class="btn btn-outline" href="#/leksione/${prev.id}">← ${esc(prev.title)}</a>` : '<span></span>'}
               ${Store.currentUser()
-                ? (done ? '<span class="badge badge-green">✓ Kapitulli është shënuar si i përfunduar</span>' : `<button class="btn btn-green" data-action="mark-done" data-id="${id}">✓ Shëno si të përfunduar</button>`)
+                ? (done ? '<span class="badge badge-green">✓ Tema është shënuar si e përfunduar</span>' : `<button class="btn btn-green" data-action="mark-done" data-id="${id}">✓ Shëno si të përfunduar</button>`)
                 : '<a class="btn btn-outline" href="#/regjistrohu">Regjistrohu për të ruajtur progresin</a>'}
               ${next ? `<a class="btn btn-outline" href="#/leksione/${next.id}">${esc(next.title)} →</a>` : ''}
             </div>
@@ -235,29 +288,33 @@
     const p = Store.myProgress();
     return `
     <div class="container page-head">
-      <h1>Teste për kapitull</h1>
-      <p>Ushtrohu kapitull pas kapitulli. Pas çdo testi shikon rezultatin dhe shpjegimin e përgjigjeve të gabuara.</p>
+      <h1>Teste për çdo temë</h1>
+      <p>Ushtrohu temë pas teme me pyetjet zyrtare të manualit të DPSHTRR. Zgjidh një test me ${TEST_SIZE} pyetje të rastësishme ose të gjitha pyetjet e temës.</p>
       ${guestNotice()}
     </div>
     <div class="container section-sm">
       <div class="card table-wrap" style="padding:0">
         <table class="data">
-          <thead><tr><th>Kapitulli</th><th>Pyetje</th><th>Rezultati i fundit</th><th></th></tr></thead>
+          <thead><tr><th>Tema</th><th>Pyetje</th><th>Rezultati i fundit</th><th></th></tr></thead>
           <tbody>
             ${Store.chapters().map((c) => {
               const last = p ? [...p.tests].reverse().find((t) => t.chapterId === c.id) : null;
+              const n = Store.questionsFor(c.id).length;
               return `<tr>
                 <td><strong>${c.order}. ${esc(c.title)}</strong></td>
-                <td>${Store.questionsFor(c.id).length}</td>
+                <td>${n}</td>
                 <td>${last ? `<span class="badge ${last.correct === last.total ? 'badge-green' : 'badge-blue'}">${last.correct}/${last.total}</span>` : '<span class="muted">–</span>'}</td>
-                <td style="text-align:right"><a class="btn btn-blue btn-sm" href="#/teste/${c.id}">Fillo testin</a></td>
+                <td style="text-align:right;white-space:nowrap">
+                  <a class="btn btn-blue btn-sm" href="#/teste/${c.id}">Test ${Math.min(TEST_SIZE, n)}</a>
+                  <a class="btn btn-outline btn-sm" href="#/teste/${c.id}/te-gjitha">Të gjitha</a>
+                </td>
               </tr>`;
             }).join('')}
           </tbody>
         </table>
       </div>
       <div class="card mt-2 flex between">
-        <div><strong>Gati për provë të plotë?</strong><div class="muted small">Simulimi i provimit me kohë dhe kufi gabimesh.</div></div>
+        <div><strong>Gati për provë të plotë?</strong><div class="muted small">40 pyetje si në provimin zyrtar, 40 minuta, maks. 4 gabime.</div></div>
         <a class="btn btn-red" href="#/provimi">🏆 Bëj provim</a>
       </div>
     </div>`;
@@ -316,7 +373,8 @@
         <div class="progress mb-2"><div style="width:${Math.round((answeredCount / total) * 100)}%"></div></div>
         <div class="card">
           ${q.type === 'tf' ? '<div class="small muted">Vlerëso fjalinë: e saktë apo e gabuar?</div>' : ''}
-          ${q.sign ? `<div class="q-figure">${SIGNS.render(q.sign)}</div>` : ''}
+          ${q.fig || q.sign ? `<div class="q-figure">${figHtml(q)}</div>` : ''}
+          ${q.source === 'manual' ? `<div class="small muted" style="text-align:center">Nr. ${esc(q.block)}</div>` : ''}
           <div class="q-text">${esc(q.text)}</div>
           ${optionsHtml}
           <div class="q-nav">
@@ -400,7 +458,7 @@
         ${wrong.map((r) => `
           <div class="review-item is-wrong">
             <div class="flex" style="align-items:flex-start">
-              ${r.q.sign ? `<div style="width:70px;flex:0 0 70px">${SIGNS.render(r.q.sign)}</div>` : ''}
+              ${r.q.fig || r.q.sign ? `<div class="review-fig">${figHtml(r.q)}</div>` : ''}
               <div style="flex:1">
                 <strong>${esc(r.q.text)}</strong>
                 <div class="ans">Përgjigja jote: <span style="color:var(--red)">${this.answerText(r.q, r.a)}</span></div>
@@ -413,25 +471,47 @@
     }
   };
 
-  function chapterTest(id) {
+  /* Zgjedh pyetje nga blloqe (figura) të ndryshme */
+  function pickDistinct(pool, n) {
+    const out = [], usedBlocks = new Set();
+    for (const q of shuffle(pool)) {
+      if (out.length >= n) break;
+      const key = q.block || q.id;
+      if (usedBlocks.has(key)) continue;
+      usedBlocks.add(key); out.push(q);
+    }
+    if (out.length < n) for (const q of shuffle(pool)) { if (out.length >= n) break; if (!out.includes(q)) out.push(q); }
+    return out;
+  }
+
+  function chapterTest(id, sub) {
     const c = Store.chapter(id);
     if (!c) return notFound();
+    const all = sub === 'te-gjitha';
+    const wait = ensureFigs([id]);
+    if (wait) return wait;
     const qs = Store.questionsFor(id);
-    if (!Quiz.state || Quiz.state.chapterId !== id || Quiz.state.mode !== 'test') {
-      if (!qs.length) return `<div class="container section empty">Ky kapitull nuk ka ende pyetje.</div>`;
-      Quiz.start({ mode: 'test', chapterId: id, title: `Kapitulli ${c.order}: ${c.title}`, questions: shuffle(qs) });
+    if (!Quiz.state || Quiz.state.chapterId !== id || Quiz.state.mode !== 'test' || Quiz.state.all !== all) {
+      if (!qs.length) return `<div class="container section empty">Kjo temë nuk ka ende pyetje.</div>`;
+      Quiz.start({ mode: 'test', chapterId: id, all, title: `Tema ${c.order}: ${c.title}`, questions: all ? qs.slice() : pickDistinct(qs, TEST_SIZE) });
     }
     return `<div class="container section-sm">${Quiz.state.finished ? Quiz.renderResult() : Quiz.renderQuestion()}</div>`;
   }
 
   /* ======================= PROVIMI ======================= */
+  function officialExam() {
+    return window.Manual && Manual.ready && Manual.exam;
+  }
+
   function examSelect() {
     const u = Store.currentUser();
+    const off = officialExam();
     return `
     <div class="container page-head">
       <h1>Simulimi i provimit të patentës</h1>
       <p>Provim i ndarë nga leksionet, që funksionon si simulim i provimit teorik zyrtar sipas kategorisë së zgjedhur: pyetje me figura, kohëmatës, kufi gabimesh dhe rezultat <strong>Kalon / Nuk kalon</strong>.</p>
-      <div class="notice notice-red"><span class="ico">!</span><div>Ky test është <strong>simulim për përgatitje</strong>, jo provim zyrtar. Parametrat dhe pyetjet kontrollohen sipas rregullave të DPSHTRR-së.</div></div>
+      ${off ? `<div class="notice notice-green mb-2"><span class="ico">✓</span><div>Sipas Manualit të DPSHTRR: <strong>40 pyetje</strong> (2 nga çdo temë 1–15 dhe 1 nga çdo temë 16–25), <strong>40 minuta</strong>, lejohen <strong>maks. 4 gabime</strong>. Pyetjet zgjidhen rastësisht nga ${Manual.questions.length.toLocaleString('sq-AL')} fjalitë zyrtare.</div></div>` : ''}
+      <div class="notice notice-red"><span class="ico">!</span><div>Ky test është <strong>simulim për përgatitje</strong>, jo provim zyrtar.</div></div>
     </div>
     <div class="container section-sm">
       <h2>Zgjidh kategorinë</h2>
@@ -452,13 +532,30 @@
     </div>`;
   }
 
+  function buildExam(c) {
+    const off = officialExam();
+    const pool = Store.questionsForCategory(c.id);
+    if (off && c.questions === off.questions) {
+      const qs = [];
+      Store.chapters().forEach((ch) => {
+        const t = Manual.topic(ch.id); if (!t) return;
+        const n = off.perTopic[String(t.num)] || 0;
+        qs.push(...pickDistinct(pool.filter((q) => q.chapter === ch.id), n));
+      });
+      if (qs.length >= c.questions) return qs.slice(0, c.questions);
+      return qs.concat(shuffle(pool.filter((q) => !qs.includes(q))).slice(0, c.questions - qs.length));
+    }
+    return pickDistinct(pool, c.questions);
+  }
+
   function exam(catId) {
     const c = Store.category(catId);
     if (!c) return notFound();
     if (!Quiz.state || Quiz.state.mode !== 'exam' || Quiz.state.cat !== catId) {
-      const pool = Store.questionsForCategory(catId);
-      if (!pool.length) return `<div class="container section empty">Nuk ka ende pyetje për ${esc(c.name)}.</div>`;
-      const qs = shuffle(pool).slice(0, c.questions);
+      const wait = ensureFigs(Store.chapters().map((x) => x.id));
+      if (wait) return wait;
+      const qs = buildExam(c);
+      if (!qs.length) return `<div class="container section empty">Nuk ka ende pyetje për ${esc(c.name)}.</div>`;
       Quiz.start({ mode: 'exam', cat: c.id, catName: c.name, minutes: c.minutes, maxErrors: c.maxErrors, questions: qs });
     }
     return `<div class="container section-sm">${Quiz.state.finished ? Quiz.renderResult() : Quiz.renderQuestion()}</div>`;
@@ -660,11 +757,15 @@
     const p = Store.progressOf(user.id);
     const chs = Store.chapters();
     const wrongList = Object.entries(st.wrongIds).sort((a, b) => b[1] - a[1]).map(([id, n]) => ({ q: Store.question(id), n })).filter((x) => x.q);
+    if (window.Manual) {
+      const wTopics = [...new Set(wrongList.slice(0, 15).map((w) => w.q.chapter))].filter((id) => Manual.topic(id));
+      if (wTopics.length && !Manual.figsReady(wTopics)) Manual.loadFigs(wTopics).then(() => App.render());
+    }
     const lastCh = st.lastChapter ? Store.chapter(st.lastChapter) : null;
     return `
       <div class="grid grid-4">
-        <div class="card stat"><div class="num">${st.lessonsDone}/${st.lessonsTotal}</div><div class="lbl">Kapituj të përfunduar</div></div>
-        <div class="card stat"><div class="num">${st.testsDone}</div><div class="lbl">Teste kapitujsh</div></div>
+        <div class="card stat"><div class="num">${st.lessonsDone}/${st.lessonsTotal}</div><div class="lbl">Tema të përfunduara</div></div>
+        <div class="card stat"><div class="num">${st.testsDone}</div><div class="lbl">Teste temash</div></div>
         <div class="card stat"><div class="num">${st.examsPassed}/${st.examsDone}</div><div class="lbl">Provime të kaluara</div></div>
         <div class="card stat"><div class="num">${st.accuracy}%</div><div class="lbl">Saktësia totale</div></div>
       </div>
@@ -694,7 +795,7 @@
 
       <div class="grid grid-2 mt-2">
         <div class="card">
-          <h3>Testet e kapitujve</h3>
+          <h3>Testet e temave</h3>
           ${p.tests.length ? `<div class="table-wrap"><table class="data"><thead><tr><th>Data</th><th>Kapitulli</th><th>Rezultati</th></tr></thead><tbody>
             ${[...p.tests].reverse().map((t) => { const c = Store.chapter(t.chapterId); return `<tr><td>${fmtDate(t.date)}</td><td>${c ? esc(c.title) : '–'}</td><td>${t.correct}/${t.total}</td></tr>`; }).join('')}
           </tbody></table></div>` : '<p class="muted">Asnjë test ende.</p>'}
@@ -703,7 +804,7 @@
           <h3>Pyetjet që ${opts.admin ? 'ka' : 'ke'} gabuar</h3>
           ${wrongList.length ? wrongList.slice(0, 15).map((w) => `
             <div class="review-item is-wrong">
-              <div class="flex between"><strong style="flex:1">${esc(w.q.text)}</strong><span class="badge badge-red">${w.n}×</span></div>
+              <div class="flex between" style="align-items:flex-start">${w.q.fig || w.q.sign ? `<div class="review-fig">${figHtml(w.q)}</div>` : ''}<strong style="flex:1">${esc(w.q.text)}</strong><span class="badge badge-red">${w.n}×</span></div>
               <div class="ans small">E saktë: <strong style="color:var(--green)">${Quiz.answerText(w.q, w.q.answer)}</strong></div>
               ${w.q.explain ? `<div class="explain">💡 ${esc(w.q.explain)}</div>` : ''}
             </div>`).join('') : '<p class="muted">Asnjë gabim i regjistruar. 👏</p>'}

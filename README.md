@@ -23,14 +23,21 @@ Krijuar nga **Autoshkolla Ndoj** – www.autoshkollandoj.com – 068 20 81 109.
 
 ⚠️ Këto kredenciale janë vetëm për testim lokal. Para publikimit zëvendësohen me llogari të vërteta në server.
 
+## Pyetjet zyrtare
+Pyetjet dhe figurat janë nxjerrë nga **Manuali i DPSHTRR për kontrollin e njohurive teorike – kat. A1, A2, B1, B (Qershor 2019)**:
+- 25 tema, 626 grupe pyetjesh, **3 663 fjali Saktë/Gabim** me përgjigjet zyrtare, **490 figura**.
+- `assets/manual/manual.json` – temat, fjalitë dhe përgjigjet.
+- `assets/manual/fig/tNN.json` – figurat e secilës temë (ngarkohen vetëm kur duhen).
+- Provimi: 40 pyetje (2 nga çdo temë 1–15, 1 nga çdo temë 16–25), 40 minuta, maks. 4 gabime – sipas manualit.
+
 ## Faqet
 
 | Faqja | Adresa | Përmbajtja |
 |---|---|---|
 | Kryefaqja | `#/` | Logo, përshkrim, shërbimet, butonat “Fillo mësimin / Bëj provim”, kategoritë, kontakt |
-| Leksionet | `#/leksione` | 7 kapituj: objektiva, teori me figura, video, shembuj, test |
-| Teste për kapitull | `#/teste` | Test për çdo kapitull + shpjegimi i gabimeve |
-| Provimi | `#/provimi` | Simulim sipas kategorisë (A, B, C, D): kohëmatës, kufi gabimesh, Kalon / Nuk kalon, rishikim, përsëritje |
+| Leksionet | `#/leksione` | 25 temat e manualit: figurat dhe fjalitë zyrtare me përgjigje (me opsion “fshih përgjigjet”), shpjegime, video |
+| Teste për temë | `#/teste` | Test me 20 pyetje ose të gjitha pyetjet e temës + rishikimi i gabimeve |
+| Provimi | `#/provimi` | Simulim sipas kategorisë (A1, A2, B1, B): kohëmatës, kufi gabimesh, Kalon / Nuk kalon, rishikim, përsëritje |
 | Autoshkollat | `#/autoshkollat` | Hartë (Leaflet/OpenStreetMap), kërkim, profil, rruga në Google Maps |
 | Hyr / Regjistrohu | `#/hyr`, `#/regjistrohu` | Llogari nxënësi |
 | Profili im | `#/profili` | Leksione, teste, provime, pyetjet e gabuara, statistika, “Vazhdo mësimin” |
@@ -42,7 +49,9 @@ Mësimet dhe testet hapen pa regjistrim; llogaria duhet vetëm për të ruajtur 
 ```
 index.html
 assets/css/style.css     – dizajni (responsive: kompjuter, tablet, telefon)
-assets/js/data.js        – përmbajtja fillestare (kapituj, pyetje, kategori, autoshkolla)
+assets/js/data.js        – përmbajtja fillestare (kategori, shpjegime shtesë, autoshkolla)
+assets/js/manual.js      – ngarkimi i manualit zyrtar dhe figurave
+assets/manual/           – pyetjet dhe figurat e manualit DPSHTRR
 assets/js/signs.js       – sinjalet rrugore si SVG
 assets/js/store.js       – ruajtja e të dhënave dhe llogaritë
 assets/js/views.js       – faqet publike, testi/provimi, profili
@@ -52,8 +61,9 @@ docs/plani-vizual.png    – plani i faqes
 ```
 
 ## Për t’u kontrolluar para publikimit
-- [ ] Pyetjet: zëvendëso/plotëso me pyetësorin zyrtar të DPSHTRR-së (pyetjet aktuale janë shembuj).
-- [ ] Parametrat e provimit për çdo kategori (nr. pyetjesh, gabime të lejuara, koha) – aktualisht 40 / 4 / 40 min, për t’u konfirmuar.
+- [x] Pyetjet zyrtare të manualit DPSHTRR (2019) për A1, A2, B1, B.
+- [ ] Kontrollo nëse DPSHTRR ka botuar version më të ri të manualit.
+- [ ] Manualet për kategoritë C dhe D (nëse do të shtohen).
 - [ ] Adresa e saktë dhe koordinatat e Autoshkolla Ndoj.
 - [ ] Listimet e autoshkollave të tjera: mblidhen dhe verifikohen (Alfa/Beta janë shembuj).
 - [ ] Videot e leksioneve (lidhje YouTube nga Paneli Admin).
