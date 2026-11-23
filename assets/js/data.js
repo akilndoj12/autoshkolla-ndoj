@@ -6,19 +6,19 @@
    Administratori mund t'i ndryshojë të gjitha nga Paneli Admin.
    ========================================================== */
 window.SEED = {
-  version: 2,
+  version: 3,
 
   site: {
     name: 'Autoshkolla Ndoj',
-    slogan: 'Më e mira në Tiranë',
+    slogan: 'Rrëshen, Mirditë',
     heroTitle: 'Mëso teorinë, ushtrohu dhe përgatitu për provimin',
     heroText: 'Platforma online e Autoshkolla Ndoj: leksione të qarta me figura, teste për çdo kapitull dhe simulim i provimit teorik të patentës – nga kompjuteri, tableti ose telefoni.',
     about: 'Kjo platformë është krijuar nga Autoshkolla Ndoj për të ndihmuar nxënësit të mësojnë rregullat e qarkullimit rrugor dhe të përgatiten me siguri për provimin teorik.',
     phone: '068 20 81 109',
     email: 'info@autoshkollandoj.com',
     website: 'www.autoshkollandoj.com',
-    city: 'Tiranë',
-    address: 'Tiranë'
+    city: 'Rrëshen',
+    address: 'Rrëshen, Mirditë'
   },
 
   /* Parametrat e provimit sipas Manualit të DPSHTRR (2019) për kat. A1, A2, B1, B:
@@ -185,9 +185,9 @@ window.SEED = {
      Hyrjet me demo:true janë vetëm shembuj për prototipin. */
   schools: [
     {
-      id: 's1', name: 'Autoshkolla Ndoj', city: 'Tiranë', address: 'Tiranë (adresa e saktë për t’u plotësuar)',
+      id: 's1', name: 'Autoshkolla Ndoj', city: 'Rrëshen', address: 'Rrëshen, Mirditë (adresa e saktë për t’u plotësuar)',
       phone: '068 20 81 109', email: 'info@autoshkollandoj.com', website: 'www.autoshkollandoj.com',
-      lat: 41.3275, lng: 19.8187, categories: ['A', 'B', 'C', 'D'],
+      lat: 41.7675, lng: 19.8757, categories: ['A1', 'A2', 'B1', 'B'],
       description: 'Autoshkolla që ka krijuar këtë platformë. Kurse teorike dhe praktike për patentë.',
       verified: true, demo: false
     },

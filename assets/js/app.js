@@ -36,7 +36,7 @@
 
     // Kur largohesh nga një test/provim, ndalo kohëmatësin
     if (route !== lastRoute && Quiz.state) {
-      const inQuiz = (page === 'teste' && id) || (page === 'provimi' && id);
+      const inQuiz = (page === 'teste' && id) || (page === 'provimi' && id && sub);
       if (!inQuiz) Quiz.stop();
     }
     if (route !== lastRoute) Admin.closeModal();
@@ -46,7 +46,7 @@
       case '': html = Views.home(); break;
       case 'leksione': html = id ? Views.lesson(id) : Views.lessons(); break;
       case 'teste': html = id ? Views.chapterTest(id, sub) : Views.tests(); break;
-      case 'provimi': html = id ? Views.exam(id) : Views.examSelect(); break;
+      case 'provimi': html = id ? Views.exam(id, sub) : Views.examSelect(); break;
       case 'autoshkollat': html = id ? Views.schoolProfile(id) : Views.schools(); break;
       case 'hyr': html = Views.auth('login'); break;
       case 'regjistrohu': html = Views.auth('register'); break;

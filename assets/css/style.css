@@ -373,3 +373,20 @@ table.data th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04
 .spinner { width: 38px; height: 38px; border: 4px solid var(--line); border-top-color: var(--green); border-radius: 50%; margin: 0 auto; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 860px) { .lesson-layout .chapter-list { display: none; } }
+
+/* ---------- Lista e testeve ---------- */
+.test-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.test-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: 60px; padding: 10px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff;
+  text-decoration: none; color: var(--ink); font-weight: 700; font-size: 1.05rem; text-align: center;
+}
+.test-btn:hover { border-color: var(--blue); background: var(--blue-soft); }
+.test-btn.test-main { grid-column: span 2; background: var(--red); border-color: var(--red); color: #fff; font-size: 1.15rem; }
+.test-btn.test-main:hover { background: var(--red-dark); }
+.test-btn.is-ok { border-color: var(--green); background: var(--green-soft); }
+.test-btn.is-no { border-color: #f3b4ae; background: var(--red-soft); }
+.tbadge { font-size: .74rem; font-weight: 800; }
+.tbadge.ok { color: var(--green-dark); } .tbadge.no { color: var(--red-dark); }
+.test-main .tbadge { color: #fff; }
+@media (max-width: 420px) { .test-grid { grid-template-columns: 1fr 1fr; } .test-btn.test-main { grid-column: 1 / -1; } }

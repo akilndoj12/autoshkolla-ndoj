@@ -4,7 +4,10 @@
 (function () {
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleString('sq-AL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; } };
-  const shuffle = (arr) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const shuffle = (arr, rnd = Math.random) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  /* Gjenerator i rastësishëm me farë (seed): i njëjti numër testi → të njëjtat pyetje */
+  const seeded = (seed) => () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const FIXED_TESTS = 100;
   const telHref = (p) => 'tel:+355' + String(p).replace(/\D/g, '').replace(/^0/, '');
   const mapsDir = (s) => `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`;
 
@@ -51,7 +54,7 @@
           <span class="badge badge-green">${window.Manual && Manual.ready ? Manual.questions.length.toLocaleString('sq-AL') + ' pyetje zyrtare nga manuali i DPSHTRR' : 'Platformë online për teorinë e patentës'}</span>
           <h1 class="mt-1">Mirë se vini në <span>${esc(s.name)}</span></h1>
           <p class="lead">${esc(s.heroText)}</p>
-          <p class="hero-by">Krijuar nga ${esc(s.name)} – ${esc(s.slogan)}.</p>
+          <p class="hero-by">Krijuar nga ${esc(s.name)} · ${esc(s.slogan)}</p>
           <div class="btn-row mt-2">
             <a class="btn btn-green btn-lg" href="#/leksione${st && st.lastChapter ? '/' + st.lastChapter : ''}">▶ ${st && st.lastChapter ? 'Vazhdo mësimin' : 'Fillo mësimin'}</a>
             <a class="btn btn-red btn-lg" href="#/provimi">🏆 Bëj provim</a>
@@ -420,7 +423,7 @@
       };
       let saved = false;
       if (s.mode === 'exam') {
-        rec.cat = s.cat; rec.maxErrors = s.maxErrors; rec.passed = errors <= s.maxErrors;
+        rec.cat = s.cat; rec.testNo = s.testNo || 0; rec.maxErrors = s.maxErrors; rec.passed = errors <= s.maxErrors;
         saved = Store.addExam(rec);
       } else {
         rec.chapterId = s.chapterId;
@@ -448,7 +451,7 @@
           ${saved ? '<span class="badge badge-green">Rezultati u ruajt në profilin tënd</span>' : '<span class="badge">Rezultati nuk u ruajt – <a href="#/regjistrohu">krijo llogari</a> për ta ruajtur</span>'}
           <div class="btn-row mt-2" style="justify-content:center">
             <button class="btn btn-blue" data-action="q-retry">↻ Përsërit ${isExam ? 'provimin' : 'testin'}</button>
-            ${isExam ? '<a class="btn btn-outline" href="#/provimi">Ndrysho kategorinë</a>' : `<a class="btn btn-outline" href="#/leksione/${s.chapterId}">Kthehu te leksioni</a>`}
+            ${isExam ? `${s.testNo && s.testNo < FIXED_TESTS ? `<a class="btn btn-green" href="#/provimi/${s.cat}/${s.testNo + 1}">Testi ${s.testNo + 1} →</a>` : ''}<a class="btn btn-outline" href="#/provimi/${s.cat}">Të gjitha testet</a>` : `<a class="btn btn-outline" href="#/leksione/${s.chapterId}">Kthehu te leksioni</a>`}
             ${wrong.length ? '<button class="btn btn-outline" data-action="scroll-review">Shiko gabimet</button>' : ''}
           </div>
         </div>
@@ -472,15 +475,15 @@
   };
 
   /* Zgjedh pyetje nga blloqe (figura) të ndryshme */
-  function pickDistinct(pool, n) {
+  function pickDistinct(pool, n, rnd = Math.random) {
     const out = [], usedBlocks = new Set();
-    for (const q of shuffle(pool)) {
+    for (const q of shuffle(pool, rnd)) {
       if (out.length >= n) break;
       const key = q.block || q.id;
       if (usedBlocks.has(key)) continue;
       usedBlocks.add(key); out.push(q);
     }
-    if (out.length < n) for (const q of shuffle(pool)) { if (out.length >= n) break; if (!out.includes(q)) out.push(q); }
+    if (out.length < n) for (const q of shuffle(pool, rnd)) { if (out.length >= n) break; if (!out.includes(q)) out.push(q); }
     return out;
   }
 
@@ -525,38 +528,67 @@
             <div class="muted small mb-2">${esc(c.label)}</div>
             <div class="small">📝 ${Math.min(c.questions, avail)} pyetje · ⏱ ${c.minutes} min</div>
             <div class="small mb-2">❌ Maks. ${c.maxErrors} gabime</div>
-            <a class="btn btn-red btn-block" href="#/provimi/${c.id}">Fillo provimin</a>
+            <a class="btn btn-red btn-block" href="#/provimi/${c.id}">Hap testet</a>
           </div>`;
         }).join('')}
       </div>
     </div>`;
   }
 
-  function buildExam(c) {
+  function buildExam(c, testNo) {
     const off = officialExam();
-    const pool = Store.questionsForCategory(c.id);
+    const rnd = testNo ? seeded(testNo * 7919 + 17) : Math.random;
+    const pool = Store.questionsForCategory(c.id).filter((q) => !testNo || q.source === 'manual');
     if (off && c.questions === off.questions) {
       const qs = [];
       Store.chapters().forEach((ch) => {
         const t = Manual.topic(ch.id); if (!t) return;
         const n = off.perTopic[String(t.num)] || 0;
-        qs.push(...pickDistinct(pool.filter((q) => q.chapter === ch.id), n));
+        qs.push(...pickDistinct(pool.filter((q) => q.chapter === ch.id), n, rnd));
       });
       if (qs.length >= c.questions) return qs.slice(0, c.questions);
-      return qs.concat(shuffle(pool.filter((q) => !qs.includes(q))).slice(0, c.questions - qs.length));
+      return qs.concat(shuffle(pool.filter((q) => !qs.includes(q)), rnd).slice(0, c.questions - qs.length));
     }
-    return pickDistinct(pool, c.questions);
+    return pickDistinct(pool, c.questions, rnd);
   }
 
-  function exam(catId) {
+  /* Faqja e kategorisë: Simulim i testit zyrtar + Testi 1…N */
+  function examCategory(c) {
+    const p = Store.myProgress();
+    const results = {};
+    if (p) p.exams.filter((e) => e.cat === c.id).forEach((e) => {
+      const k = e.testNo || 0;
+      if (!results[k] || e.correct > results[k].correct) results[k] = e;
+    });
+    const badge = (r) => !r ? '' : `<span class="tbadge ${r.passed ? 'ok' : 'no'}">${r.passed ? '✓' : '✗'} ${r.errors} gab.</span>`;
+    const done = Object.keys(results).filter((k) => k !== '0').length;
+    return `
+    <div class="container page-head">
+      <a href="#/provimi" class="btn btn-ghost btn-sm">← Të gjitha kategoritë</a>
+      <h1 class="mt-1">${c.icon} ${esc(c.name)} <span class="muted" style="font-size:.6em">${esc(c.label)}</span></h1>
+      <p>Çdo test ka ${c.questions} pyetje, ${c.minutes} minuta dhe lejohen maks. ${c.maxErrors} gabime. <strong>Simulimi i testit zyrtar</strong> zgjedh pyetje të reja çdo herë; <strong>Testet 1–${FIXED_TESTS}</strong> kanë gjithmonë të njëjtat pyetje, që të mund t’i përsërisësh.</p>
+      ${p ? `<p class="small muted">Ke kryer ${done} nga ${FIXED_TESTS} testet.</p>` : guestNotice()}
+    </div>
+    <div class="container section-sm">
+      <div class="test-grid">
+        <a class="test-btn test-main" href="#/provimi/${c.id}/rastesishem">🎲 Simulim i Testit Zyrtar ${badge(results[0])}</a>
+        ${Array.from({ length: FIXED_TESTS }, (_, i) => i + 1).map((n) => `<a class="test-btn ${results[n] ? (results[n].passed ? 'is-ok' : 'is-no') : ''}" href="#/provimi/${c.id}/${n}">Testi ${n}${badge(results[n])}</a>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  function exam(catId, sub) {
     const c = Store.category(catId);
     if (!c) return notFound();
-    if (!Quiz.state || Quiz.state.mode !== 'exam' || Quiz.state.cat !== catId) {
+    if (!sub) { if (Quiz.state && Quiz.state.mode === 'exam') Quiz.stop(); return examCategory(c); }
+    const testNo = sub === 'rastesishem' ? 0 : parseInt(sub, 10);
+    if (sub !== 'rastesishem' && !(testNo >= 1 && testNo <= FIXED_TESTS)) return notFound();
+    if (!Quiz.state || Quiz.state.mode !== 'exam' || Quiz.state.cat !== catId || Quiz.state.testNo !== testNo) {
       const wait = ensureFigs(Store.chapters().map((x) => x.id));
       if (wait) return wait;
-      const qs = buildExam(c);
+      const qs = buildExam(c, testNo);
       if (!qs.length) return `<div class="container section empty">Nuk ka ende pyetje për ${esc(c.name)}.</div>`;
-      Quiz.start({ mode: 'exam', cat: c.id, catName: c.name, minutes: c.minutes, maxErrors: c.maxErrors, questions: qs });
+      Quiz.start({ mode: 'exam', cat: c.id, testNo, catName: c.name + (testNo ? ` · Testi ${testNo}` : ' · Simulim'), minutes: c.minutes, maxErrors: c.maxErrors, questions: qs });
     }
     return `<div class="container section-sm">${Quiz.state.finished ? Quiz.renderResult() : Quiz.renderQuestion()}</div>`;
   }
@@ -786,8 +818,8 @@
         </div>
         <div class="card">
           <h3>Rezultatet e provimeve</h3>
-          ${p.exams.length ? `<div class="table-wrap"><table class="data"><thead><tr><th>Data</th><th>Kat.</th><th>Gabime</th><th>Rezultati</th></tr></thead><tbody>
-            ${[...p.exams].reverse().map((e) => `<tr><td>${fmtDate(e.date)}</td><td>${esc(e.cat)}</td><td>${e.errors}/${e.total}</td>
+          ${p.exams.length ? `<div class="table-wrap"><table class="data"><thead><tr><th>Data</th><th>Testi</th><th>Gabime</th><th>Rezultati</th></tr></thead><tbody>
+            ${[...p.exams].reverse().map((e) => `<tr><td>${fmtDate(e.date)}</td><td>${esc(e.cat)} · ${e.testNo ? 'Testi ' + e.testNo : 'Simulim'}</td><td>${e.errors}/${e.total}</td>
               <td>${e.passed ? '<span class="badge badge-green">Kalon</span>' : '<span class="badge badge-red">Nuk kalon</span>'}</td></tr>`).join('')}
           </tbody></table></div>` : `<p class="muted">Asnjë provim ende. ${!opts.admin ? '<a href="#/provimi">Bëj të parin</a>' : ''}</p>`}
         </div>

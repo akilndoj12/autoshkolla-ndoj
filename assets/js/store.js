@@ -84,7 +84,12 @@
       // Migrimi nga versioni 1 (pyetje shembull) te manuali zyrtar
       if ((db.version || 1) < window.SEED.version) {
         const s = clone(window.SEED);
-        db.version = s.version; db.categories = s.categories; db.chapters = buildChapters(); db.questions = [];
+        if ((db.version || 1) < 2) { db.categories = s.categories; db.chapters = buildChapters(); db.questions = []; }
+        if ((db.version || 1) < 3) {   // vendndodhja: Rrëshen, Mirditë
+          db.site = s.site;
+          db.schools = db.schools.filter((x) => x.id !== 's1'); db.schools.unshift(s.schools[0]);
+        }
+        db.version = s.version;
         save();
       } else if (Manual.ready && db.chapters.length < Manual.topics().length) {
         db.chapters = buildChapters(); save();

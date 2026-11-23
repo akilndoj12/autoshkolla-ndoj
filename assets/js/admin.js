@@ -267,7 +267,7 @@
       { name: 'description', label: 'Përshkrimi', type: 'textarea', rows: 3 },
       { name: 'verified', label: 'Të dhënat janë verifikuar', type: 'bool' },
       { name: 'demo', label: 'Listim shembull (demo)', type: 'bool' }
-    ], s || { categories: ['B'], lat: 41.3275, lng: 19.8187 }, (o) => {
+    ], s || { categories: ['B'], lat: 41.7675, lng: 19.8757 }, (o) => {
       req(o.name, 'Emri'); req(o.city, 'Qyteti');
       if (!(o.lat > 39 && o.lat < 43 && o.lng > 18.5 && o.lng < 21.5)) throw new Error('Koordinatat duket se nuk janë brenda Shqipërisë.');
       Store.upsert('schools', Object.assign({ id: s ? s.id : Store.uid('s') }, o));
