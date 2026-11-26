@@ -63,3 +63,32 @@
 
   window.Manual = Manual;
 })();
+
+/* ==========================================================
+   LIBRI I TEORISË (DPSHTRR 2022) + Libërthi – assets/book/book.json
+   ========================================================== */
+(function () {
+  let data = null;
+  const byId = {};
+  const order = [];
+  const Book = {
+    get ready() { return !!data; },
+    get data() { return data; },
+    temat() { return data ? data.temat : []; },
+    routeId(sid) { return 'b' + sid.replace('.', '-'); },
+    fromRoute(rid) { return rid && rid[0] === 'b' ? rid.slice(1).replace('-', '.') : null; },
+    section(sid) { return byId[sid] || null; },
+    order() { return order; },
+    async load() {
+      if (data) return data;
+      try {
+        const r = await fetch('assets/book/book.json');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        data = await r.json();
+      } catch (e) { console.warn('Libri nuk u ngarkua', e); return null; }
+      data.temat.forEach((t) => t.sections.forEach((s) => { s.tema = t; byId[s.id] = s; order.push(s.id); }));
+      return data;
+    }
+  };
+  window.Book = Book;
+})();

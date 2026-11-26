@@ -429,3 +429,31 @@ table.data th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04
 .q-dots button.d-ok { background: #1e8e3e; color: #fff; border-color: #1e8e3e; }
 .q-dots button.d-no { background: #d93025; color: #fff; border-color: #d93025; }
 .q-dots button.d-ok.current, .q-dots button.d-no.current { outline: 3px solid #111; outline-offset: 1px; }
+
+/* ---------- Libri i teorisë ---------- */
+.tema-card { padding: 18px 20px; }
+.tema-head { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.tema-head h2 { font-size: 1.25rem; }
+.tema-num { flex: 0 0 44px; height: 44px; border-radius: 12px; background: var(--green); color: #fff; font-weight: 900; font-size: 1.3rem; display: grid; place-items: center; }
+.tema-sections { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 4px 16px; }
+.tema-sections a { display: flex; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 10px; text-decoration: none; color: var(--ink); font-weight: 600; }
+.tema-sections a:hover { background: var(--green-soft); }
+.tema-sections .sid { color: var(--green-dark); font-weight: 800; min-width: 34px; }
+.tema-sections .done-mark { margin-left: auto; color: var(--green); font-weight: 900; }
+.book-body { line-height: 1.7; }
+.book-body p { margin: 0 0 .9em; }
+.book-h3 { margin: 1.6em 0 .6em; padding-bottom: 6px; border-bottom: 2px solid var(--green-soft); color: var(--green-dark); font-size: 1.2rem; }
+.book-h4 { margin: 1.3em 0 .4em; font-size: 1.02rem; letter-spacing: .02em; clear: both; }
+.book-ul { margin: 0 0 1em; padding-left: 1.3em; }
+.book-ul li { margin-bottom: .35em; }
+.book-fig { margin: 6px 0 14px; }
+.book-fig img { height: auto; max-width: 100%; }
+.book-fig.fig-sm { float: right; margin: 4px 0 10px 18px; }
+.book-fig.fig-lg { clear: both; text-align: center; }
+.book-fig.fig-lg img { margin: 0 auto; }
+.book-page { margin: 16px auto; max-width: 560px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.book-page img { width: 100%; height: auto; }
+.practice-box { clear: both; background: var(--blue-soft); border-radius: 14px; padding: 16px 18px; }
+.practice-box h3 { margin-top: 0; }
+.chapter-list .num { flex: 0 0 auto; min-width: 28px; padding: 0 4px; }
+@media (max-width: 600px) { .book-fig.fig-sm { margin-left: 12px; } .book-fig.fig-sm img { max-width: 120px; } }

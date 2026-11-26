@@ -30,6 +30,12 @@ Pyetjet dhe figurat janë nxjerrë nga **Manuali i DPSHTRR për kontrollin e njo
 - `assets/manual/fig/tNN.json` – figurat e secilës temë (ngarkohen vetëm kur duhen).
 - Provimi: 40 pyetje (2 nga çdo temë 1–15, 1 nga çdo temë 16–25), 40 minuta, maks. 4 gabime – sipas manualit.
 
+## Libri i teorisë (leksionet)
+Leksionet ndjekin **Programin e Përgatitjes Teorike të DPSHTRR (2022)** për kategoritë A1, A2, A, B1, B, BE:
+10 tema, 51 leksione, ~60 000 fjalë dhe 547 figura, plus “Pyetje të shpeshta” nga Libërthi i Sigurisë Rrugore “Të udhëtojmë të sigurt”.
+- `assets/book/book.json` – temat, leksionet, teksti dhe lidhjet me testet.
+- `assets/book/img/` – figurat e librit dhe faqet e libërthit.
+
 ## Faqet
 
 | Faqja | Adresa | Përmbajtja |

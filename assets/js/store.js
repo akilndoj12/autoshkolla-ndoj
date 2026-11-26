@@ -79,7 +79,7 @@
 
   const Store = {
     async init() {
-      if (window.Manual) await Manual.load();
+      await Promise.all([window.Manual ? Manual.load() : null, window.Book ? Book.load() : null]);
       load();
       // Migrimi nga versioni 1 (pyetje shembull) te manuali zyrtar
       if ((db.version || 1) < window.SEED.version) {
@@ -187,7 +187,7 @@
     /* Statistika për një nxënës */
     statsOf(userId) {
       const p = this.progressOf(userId);
-      const chapters = this.chapters();
+      const chapters = (window.Book && Book.ready) ? Book.order().map((sid) => ({ id: Book.routeId(sid) })) : this.chapters();
       const lessonsDone = chapters.filter((c) => p.lessons[c.id]).length;
       const exams = p.exams;
       const passed = exams.filter((e) => e.passed).length;

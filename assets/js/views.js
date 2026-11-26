@@ -68,7 +68,7 @@
     <section class="section-sm"><div class="container">
       <div class="card flex between">
         <div><strong>Përshëndetje, ${esc(u.name.split(' ')[0])}!</strong>
-          <div class="muted small">Ke përfunduar ${st.lessonsDone} nga ${st.lessonsTotal} tema · ${st.examsDone} provime (${st.examsPassed} kaluar)</div></div>
+          <div class="muted small">Ke përfunduar ${st.lessonsDone} nga ${st.lessonsTotal} leksione · ${st.examsDone} provime (${st.examsPassed} kaluar)</div></div>
         <div style="flex:1 1 200px;max-width:320px"><div class="progress"><div style="width:${st.lessonPct}%"></div></div></div>
         <a class="btn btn-outline" href="#/profili">Profili im</a>
       </div>
@@ -159,23 +159,116 @@
   }
   const TEST_SIZE = 20;
 
+  /* Referencë e përbashkët për një leksion (seksion libri "b2-1" ose temë testi "t01") */
+  function lessonRef(id) {
+    if (!id) return null;
+    const sid = window.Book && Book.fromRoute(id);
+    if (sid) { const s = Book.section(sid); return s ? { id, title: `${s.id} ${s.title}`, short: s.title } : null; }
+    const c = Store.chapter(id);
+    return c ? { id, title: c.title, short: c.title } : null;
+  }
+
   function lessons() {
     const p = Store.myProgress();
     const chs = Store.chapters();
+    const temat = window.Book ? Book.temat() : [];
     return `
     <div class="container page-head">
-      <h1>Leksionet – 25 temat e programit</h1>
-      <p>Programi ndjek temat e Manualit zyrtar të DPSHTRR për lejedrejtimi të kategorive A1, A2, B1 dhe B. Çdo temë ka figurat dhe fjalitë zyrtare me përgjigjet, shpjegime, video dhe testin përkatës.</p>
+      <h1>Leksionet</h1>
+      <p>Mësimi ndjek <strong>Programin e Përgatitjes Teorike të DPSHTRR</strong> (libri zyrtar i teorisë për kategoritë A1, A2, A, B1, B dhe BE): ${temat.length} tema me shpjegime dhe figura. Pas çdo leksioni ka lidhje për testin përkatës.</p>
       ${guestNotice()}
     </div>
-    <div class="container grid grid-3 section-sm">
-      ${chs.map((c) => `
-        <a class="card feature" href="#/leksione/${c.id}">
-          <div class="flex between"><span class="badge badge-blue">Tema ${c.order}</span>${p && p.lessons[c.id] ? '<span class="badge badge-green">✓ Përfunduar</span>' : ''}</div>
-          <h3 class="mt-1 mb-0">${esc(c.title)}</h3>
-          ${c.summary ? `<p>${esc(c.summary)}</p>` : ''}
-          <span class="small muted">${Store.questionsFor(c.id).length} pyetje</span>
-        </a>`).join('')}
+    <div class="container section-sm">
+      ${temat.map((t) => `
+        <div class="card tema-card mb-2">
+          <div class="tema-head"><span class="tema-num">${t.num}</span><h2 class="mb-0">${esc(t.title)}</h2></div>
+          <ol class="tema-sections">
+            ${t.sections.map((s) => { const rid = Book.routeId(s.id); return `
+              <li><a href="#/leksione/${rid}"><span class="sid">${esc(s.id)}</span><span>${esc(s.title)}</span>${p && p.lessons[rid] ? '<span class="done-mark">✓</span>' : ''}</a></li>`; }).join('')}
+          </ol>
+        </div>`).join('')}
+
+      <h2 class="mt-3">Rregullat e sakta sipas temave të testit</h2>
+      <p class="muted">Figurat e manualit të pyetjeve me vetëm fjalitë e sakta – për përsëritje para testit.</p>
+      <div class="grid grid-3">
+        ${chs.map((c) => `
+          <a class="card feature" href="#/leksione/${c.id}">
+            <span class="badge badge-blue">Tema e testit ${c.order}</span>
+            <h3 class="mt-1 mb-0">${esc(c.title)}</h3>
+            <span class="small muted">${Store.questionsFor(c.id).length} pyetje</span>
+          </a>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  /* Leksion nga libri i teorisë */
+  function bookBlocks(blocks) {
+    let html = '', inList = false;
+    const close = () => { if (inList) { html += '</ul>'; inList = false; } };
+    blocks.forEach((b) => {
+      if (b.t === 'li') { if (!inList) { html += '<ul class="book-ul">'; inList = true; } html += `<li>${esc(b.text)}</li>`; return; }
+      close();
+      if (b.t === 'h3') html += `<h3 class="book-h3">${esc(b.text)}</h3>`;
+      else if (b.t === 'h4') html += `<h4 class="book-h4">${esc(b.text)}</h4>`;
+      else if (b.t === 'pb') html += `<p><strong>${esc(b.text)}</strong></p>`;
+      else if (b.t === 'p') html += `<p>${esc(b.text)}</p>`;
+      else if (b.t === 'img') {
+        const small = b.w < 170, wide = b.w / b.h > 1.2;
+        const sw = Math.min(Math.round(b.w * (wide ? 2 : 1.35)), 280);
+        html += `<figure class="book-fig ${small ? 'fig-sm' : 'fig-lg'}"><img src="assets/book/img/${esc(b.img)}" alt="" loading="lazy" style="${small ? `width:${sw}px` : `max-width:${Math.min(Math.round(b.w * 1.45), 900)}px`}" /></figure>`;
+      } else if (b.t === 'page') {
+        html += `<figure class="book-page"><img src="assets/book/img/${esc(b.img)}" alt="Faqe nga libërthi" loading="lazy" /></figure>`;
+      }
+    });
+    close();
+    return html;
+  }
+
+  function bookLesson(rid) {
+    const sid = Book.fromRoute(rid);
+    const s = Book.section(sid);
+    if (!s) return notFound();
+    Store.setLastChapter(rid);
+    const ord = Book.order(), i = ord.indexOf(sid);
+    const prev = i > 0 ? Book.section(ord[i - 1]) : null, next = i < ord.length - 1 ? Book.section(ord[i + 1]) : null;
+    const p = Store.myProgress();
+    const done = p && p.lessons[rid];
+    const pct = Math.round(((i + (done ? 1 : 0)) / ord.length) * 100);
+    const tests = (s.tests || []).map((tid) => Store.chapter(tid)).filter(Boolean);
+    return `
+    <div class="container section-sm">
+      <div class="lesson-layout">
+        <aside class="card chapter-list">
+          <h3>Tema ${s.tema.num}</h3>
+          ${s.tema.sections.map((x) => { const r = Book.routeId(x.id); return `
+            <a href="#/leksione/${r}" class="${x.id === sid ? 'active' : ''}"><span class="num">${esc(x.id)}</span><span>${esc(x.title)}</span>${p && p.lessons[r] ? '<span class="done-mark">✓</span>' : ''}</a>`; }).join('')}
+          <a href="#/leksione" class="mt-1"><span class="num">≡</span><span>Të gjitha temat</span></a>
+        </aside>
+        <article class="card lesson-body book-body">
+          <span class="badge badge-blue">Tema ${s.tema.num} · ${esc(s.tema.title)}</span>
+          <h2 class="mt-1">${esc(s.id)} ${esc(s.title)}</h2>
+          ${bookBlocks(s.blocks)}
+
+          <section class="lesson-section practice-box">
+            <h3>Ushtrohu për këtë leksion</h3>
+            ${tests.length ? `<div class="btn-row">${tests.map((c) => `<a class="btn btn-blue" href="#/teste/${c.id}">☑ Test: ${esc(c.title)}</a>`).join('')}</div>
+            <p class="small muted mt-1">Rregullat e sakta me figura: ${tests.map((c) => `<a href="#/leksione/${c.id}">${esc(c.title)}</a>`).join(' · ')}</p>` : '<a class="btn btn-red" href="#/provimi">🏆 Bëj provim</a>'}
+          </section>
+
+          <section class="lesson-section">
+            <p class="small muted mb-0">Progresi i kursit</p>
+            <div class="flex"><div class="progress" style="flex:1"><div style="width:${pct}%"></div></div><strong>${pct}%</strong></div>
+            <div class="btn-row mt-2 between">
+              ${prev ? `<a class="btn btn-outline" href="#/leksione/${Book.routeId(prev.id)}">← ${esc(prev.id)} ${esc(prev.title)}</a>` : '<span></span>'}
+              ${Store.currentUser()
+                ? (done ? '<span class="badge badge-green">✓ Leksioni është shënuar si i përfunduar</span>' : `<button class="btn btn-green" data-action="mark-done" data-id="${rid}">✓ Shëno si të përfunduar</button>`)
+                : '<a class="btn btn-outline" href="#/regjistrohu">Regjistrohu për të ruajtur progresin</a>'}
+              ${next ? `<a class="btn btn-outline" href="#/leksione/${Book.routeId(next.id)}">${esc(next.id)} ${esc(next.title)} →</a>` : ''}
+            </div>
+          </section>
+          <p class="small muted mt-2">Burimi: DPSHTRR – ${s.tema.source === 'liberth' ? 'Libërthi i Sigurisë Rrugore “Të udhëtojmë të sigurt”' : 'Programi i Përgatitjes Teorike për Lejet e Drejtimit (2022)'}, faqe ${s.page}.</p>
+        </article>
+      </div>
     </div>`;
   }
 
@@ -202,6 +295,7 @@
   }
 
   function lesson(id) {
+    if (window.Book && Book.fromRoute(id)) return bookLesson(id);
     const c = Store.chapter(id);
     if (!c) return notFound();
     const wait = ensureFigs([id]);
@@ -820,10 +914,11 @@
       const wTopics = [...new Set(wrongList.slice(0, 15).map((w) => w.q.chapter))].filter((id) => Manual.topic(id));
       if (wTopics.length && !Manual.figsReady(wTopics)) Manual.loadFigs(wTopics).then(() => App.render());
     }
-    const lastCh = st.lastChapter ? Store.chapter(st.lastChapter) : null;
+    const lastCh = lessonRef(st.lastChapter);
+    const lessonList = window.Book && Book.ready ? Book.order().map((sid) => ({ id: Book.routeId(sid), label: `${sid} ${Book.section(sid).title}` })) : chs.map((c) => ({ id: c.id, label: `${c.order}. ${c.title}` }));
     return `
       <div class="grid grid-4">
-        <div class="card stat"><div class="num">${st.lessonsDone}/${st.lessonsTotal}</div><div class="lbl">Tema të përfunduara</div></div>
+        <div class="card stat"><div class="num">${st.lessonsDone}/${st.lessonsTotal}</div><div class="lbl">Leksione të përfunduara</div></div>
         <div class="card stat"><div class="num">${st.testsDone}</div><div class="lbl">Teste temash</div></div>
         <div class="card stat"><div class="num">${st.examsPassed}/${st.examsDone}</div><div class="lbl">Provime të kaluara</div></div>
         <div class="card stat"><div class="num">${st.accuracy}%</div><div class="lbl">Saktësia totale</div></div>
@@ -833,14 +928,14 @@
       <div class="card mt-2 flex between">
         <div style="flex:1 1 260px"><strong>Progresi i leksioneve</strong>
           <div class="flex mt-1"><div class="progress" style="flex:1"><div style="width:${st.lessonPct}%"></div></div><strong>${st.lessonPct}%</strong></div></div>
-        <a class="btn btn-green" href="#/leksione${lastCh ? '/' + lastCh.id : ''}">▶ ${lastCh ? 'Vazhdo: ' + esc(lastCh.title) : 'Fillo mësimin'}</a>
+        <a class="btn btn-green" href="#/leksione${lastCh ? '/' + lastCh.id : ''}">▶ ${lastCh ? 'Vazhdo: ' + esc(lastCh.short) : 'Fillo mësimin'}</a>
       </div>` : ''}
 
       <div class="grid grid-2 mt-2">
         <div class="card">
           <h3>Leksionet</h3>
-          <ul class="plain">${chs.map((c) => `<li class="flex between" style="padding:6px 0;border-bottom:1px solid var(--line)">
-            <span>${c.order}. ${esc(c.title)}</span>
+          <ul class="plain" style="max-height:420px;overflow:auto">${lessonList.map((c) => `<li class="flex between" style="padding:6px 0;border-bottom:1px solid var(--line)">
+            <span>${esc(c.label)}</span>
             ${p.lessons[c.id] ? `<span class="badge badge-green">✓ ${fmtDate(p.lessons[c.id]).split(',')[0]}</span>` : '<span class="badge">Pa përfunduar</span>'}</li>`).join('')}</ul>
         </div>
         <div class="card">
